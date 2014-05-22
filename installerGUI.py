@@ -160,6 +160,18 @@ class instructionsWindow(componentInstructionsDialog.Ui_Dialog):
 # Child classes
 # Individualise the parent classes mostly by changing the text 
 
+
+# Instructions for activating WOIS plugins
+class uninstallInstructionsWindow(instructionsWindow):
+    def __init__(self):
+        instructionsWindow.__init__(self)
+     
+    def retranslateUi(self, MainWindow):
+        super(uninstallInstructionsWindow, self).retranslateUi(MainWindow)
+        self.topLabel.setText(_translate("MainWindow", "For smooth installation process some of the old components of WOIS have to be uninstalled if they are present on your computer.", None))
+        self.instructionsMainLabel.setText(_translate("MainWindow", "Please follow the uninstallation instructions present in the 'WOIS installation' document located in the WOIS installation directory.", None))
+        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Uninstall old version", None)) 
+
 # OSGeo4W       
 class osgeo4wInstallWindow(installWindow):
     def __init__(self):
@@ -174,10 +186,10 @@ class osgeo4wInstallWindow(installWindow):
 
 # Instructions for activating WOIS plugins
 class pluginsInstructionsWindow(instructionsWindow):
-     def __init__(self):
+    def __init__(self):
         instructionsWindow.__init__(self)
      
-     def retranslateUi(self, MainWindow):
+    def retranslateUi(self, MainWindow):
         super(pluginsInstructionsWindow, self).retranslateUi(MainWindow)
         self.topLabel.setText(_translate("MainWindow", "The different WOIS components are integrated into QGIS using plugins.", None))
         self.instructionsMainLabel.setText(_translate("MainWindow", "After clicking on the \"Continue\" button QGIS will start. In the program select \"Plugins\" > \"Manage Plugins…\" from the main menu, find the 1-Band Raster Colour Table, OpenLayers, PostGIS manager, SEXTANTE, SEXTANT BEAM and NEST Provider, SEXTANTE Working Group 9 Hydrological Model Provider, WOIS Workflows and Zonal statistics plugins in the list and tick the boxes next to them and click OK. Afterwards close QGIS.", None))
@@ -241,9 +253,22 @@ class rInstallWindow(installWindow):
         
     def retranslateUi(self, MainWindow):
         super(rInstallWindow, self).retranslateUi(MainWindow)
-        self.topLabel.setText(_translate("MainWindow", "R is a statistical scripting language used by WOIS for various data processing tasks", None))
+        self.topLabel.setText(_translate("MainWindow", "R is a statistical scripting language used by WOIS for various data processing tasks.", None))
         self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the OSGeo4W installer will start. In the installer you will be asked to accept the R license conditions followed by a couple of installation questions. In all the questions you can keep the default answers by clicking \"Next >\" until the installation starts.", None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install R", None))   
+
+class rPostInstallWindow(postInstallWindow):
+    def __init__(self, defaultPath):
+        self.defaultPath = defaultPath
+        postInstallWindow.__init__(self)
+        self.componentLogoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/rLogo.png")))
+        
+    def retranslateUi(self, MainWindow):
+        super(rPostInstallWindow, self).retranslateUi(MainWindow)
+        self.topLabel.setText(_translate("MainWindow", "R is a statistical scripting language used by WOIS for various data processing tasks.", None))
+        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for R. If you changed the R installation directory during the previous step, make sure that you update the path to the directory below.", None))
+        self.dirPathText.setPlainText(_translate("MainWindow", self.defaultPath, None))
+        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install R", None))
         
 # PostGre
 class postgreInstallWindow(installWindow):
@@ -266,7 +291,7 @@ class postgisInstallWindow(installWindow):
     def retranslateUi(self, MainWindow):
         super(postgisInstallWindow, self).retranslateUi(MainWindow)
         self.topLabel.setText(_translate("MainWindow", "PostGIS is a geospatial database used by WOIS for storing certain types of data. It is not necessary to have it installed on every computer using WOIS, since the database can run from a central server. Therefore its installation is optional.", None))
-        self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the PostGIS installer will start. You need to accept the license and in then select both 'PostGIS' and 'Create spatial database'. Two steps later you will need to <b>enter the password set earlier during the installation</b> (e.g. waterinfo) and in the following step the name of the database (e.g. WOIS_local). If a question pops up about GDAL_DATA environment variable click Yes.", None))
+        self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the PostGIS installer will start. You need to accept the license and in then select both 'PostGIS' and 'Create spatial database'. Two steps later you will need to <b>enter the password set earlier during the installation</b> (e.g. waterinfo) and in the following step the name of the database (e.g. WOIS_local). If any questions pop up just click Yes.", None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install PostGIS (Optional)", None)) 
         
 # MapWindow       
@@ -326,7 +351,7 @@ class finishWindow(instructionsWindow):
     def retranslateUi(self, MainWindow):
         super(finishWindow, self).retranslateUi(MainWindow)
         self.topLabel.setText(_translate("MainWindow", "The WOIS has now been installed on your computer. Thank you.", None))
-        self.instructionsMainLabel.setText(_translate("MainWindow", "You can now start QGIS to activate the WOIS plugins. In the program select \"Plugins\" > \"Manage Plugins…\" from the main menu, find the 1-Band Raster Colour Table, OpenLayers, PostGIS manager, SEXTANTE, SEXTANT BEAM and NEST Provider, SEXTANTE Working Group 9 Hydrological Model Provider, WOIS Workflows and Zonal statistics plugins in the list and tick the boxes next to them and click OK.", None))
+        self.instructionsMainLabel.setText(_translate("MainWindow", "You can now start QGIS to begin working with the Water Information and Observation System.", None))
         self.continueButton.setVisible(False)
         self.instructionsHeaderLabel.setVisible(False)
         self.bottomLabel.setVisible(False)

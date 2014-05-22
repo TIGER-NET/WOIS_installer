@@ -8,8 +8,9 @@ from PyQt4 import QtCore, QtGui
 from  installerGUI import  installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, nestInstallWindow, nestPostInstallWindow 
 from installerGUI import osgeo4wInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, pluginsInstructionsWindow, finishWindow
-from installerGUI import extractingWaitWindow, copyingWaitWindow
+from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
 from installerGUI import CANCEL,SKIP,NEXT
+from QGISSettings import QGISSettings
 import sys
 import os
 import shutil
@@ -39,44 +40,52 @@ class woisInstaller():
             # select installation files for 32 or 64 bit install
             if self.dialog.osComboBox.itemText(self.dialog.osComboBox.currentIndex()) == "32 bit":
                 is32bit = True
-                installationsDir = "installations_x32"
+                installationsDir = "Installations_x32"
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
-                beamInstall = os.path.join(installationsDir, "beam_4.10.3_win32_installer.exe")
-                nestInstall = os.path.join(installationsDir, "NEST-4C-1.1-windows-installer.exe")
-                rInstall = os.path.join(installationsDir, "R-2.15.2-win.exe")
-                postgreInstall = os.path.join(installationsDir, "postgresql-9.2.4-1-windows.exe")
-                postgisInstall = os.path.join(installationsDir, "postgis-pg92-setup-2.0.1-1.exe")
+                beamInstall = os.path.join(installationsDir, "beam_5.0_win32_installer.exe")
+                nestInstall = os.path.join(installationsDir, "NEST-5.1-windows-installer.exe")
+                rInstall = os.path.join(installationsDir, "R-3.1.0-win.exe")
+                postgreInstall = os.path.join(installationsDir, "postgresql-9.3.4-3-windows.exe")
+                postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x32-setup-2.1.3-1.exe")
                 mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v48Final-installer.exe")
                 mwswatInstall = os.path.join(installationsDir, "MWSWAT2009.exe")
                 swateditorInstall = "MWSWAT additional software\\SwatEditor_Install\\Setup.exe"
             else:
                 is32bit = False
-                installationsDir = "installations_x64"
+                installationsDir = "Installations_x64"
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
-                beamInstall = os.path.join(installationsDir, "beam_4.10.3_win64_installer.exe")
-                nestInstall = os.path.join(installationsDir, "NEST-4C-1.1-windows64-installer.exe")
-                rInstall = os.path.join(installationsDir, "R-2.15.2-win.exe")
-                postgreInstall = os.path.join(installationsDir, "postgresql-9.2.2-1-windows-x64.exe")
-                postgisInstall = os.path.join(installationsDir, "postgis-pg92x64-setup-2.0.1-1.exe")
+                beamInstall = os.path.join(installationsDir, "beam_5.0_win64_installer.exe")
+                nestInstall = os.path.join(installationsDir, "NEST-5.1-windows64-installer.exe")
+                rInstall = os.path.join(installationsDir, "R-3.1.0-win.exe")
+                postgreInstall = os.path.join(installationsDir, "postgresql-9.3.4-3-windows-x64.exe")
+                postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x64-setup-2.1.3-1.exe")
                 mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v48Final-installer.exe")
                 mwswatInstall = os.path.join(installationsDir, "MWSWAT2009.exe")
                 swateditorInstall = "MWSWAT additional software\\SwatEditor_Install\\Setup.exe"
             # select default installation directories for 32 or 64 bit install
             if is32bit:
                 osgeo4wDefaultDir = "C:\\OSGeo4W"
-                nestDefaultDir = "C:\\Program Files\\NEST4C-1.1"
-                beamDefaultDir = "C:\\Program Files\\beam-4.10.3"
+                nestDefaultDir = "C:\\Program Files\\NEST"
+                beamDefaultDir = "C:\\Program Files\\beam-5.0"
                 mapwindowDefaultDir = "C:\\Program Files\\MapWindow"
+                rDefaultDir = "C:\\Program Files\\R\\R-3.1.0"
             else:
                 osgeo4wDefaultDir = "C:\\OSGeo4W" # in next version change this one to OSGeo4W64
-                nestDefaultDir = "C:\\Program Files (x86)\\NEST4C-1.1"
-                beamDefaultDir = "C:\\Program Files\\beam-4.10.3"
+                nestDefaultDir = "C:\\Program Files\\NEST"
+                beamDefaultDir = "C:\\Program Files\\beam-5.0"
                 mapwindowDefaultDir = "C:\\Program Files (x86)\\MapWindow"
+                rDefaultDir = "C:\\Program Files\\R\\R-3.1.0"
                 
         elif self.dialog.action == CANCEL:
             return  
         else:
             self.unknownActionPopup() 
+        
+        ########################################################################
+        # Information about uninstalling old version
+        if not self.dialog.action == CANCEL:
+            self.dialog = uninstallInstructionsWindow();
+            self.showDialog()
         
         ########################################################################
         # Install OSGeo4W (QGIS, OTB, SAGA, GRASS)
@@ -89,16 +98,13 @@ class woisInstaller():
         if self.dialog.action == NEXT:
             self.util.execSubprocess(osgeo4wInstall)
             # copy the plugins
-            # for QGIS 1.8 copy the plugins to the user directory because of a bug in Atlas plugin. In QGIS 2.0 use the qgis directory
-            #dstPath = os.path.join(osgeo4wDefaultDir,"apps\\qgis\\python")
-            dstPath = os.path.join(os.path.expanduser("~"),".qgis","python")
+            dstPath = os.path.join(os.path.expanduser("~"),".qgis2","python")
             srcPath = os.path.join("QGIS WOIS plugins", "plugins.zip")
             self.dialog = extractingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
             self.showDialog()
-            # copy the config file
-            dstPath = os.path.join(os.path.expanduser("~"),".qgis","sextante")
-            srcPath = os.path.join(installationsDir,"sextante_qgis.conf")
-            self.util.copyFiles(srcPath, dstPath, checkDstParentExists = False)   
+            # activate plugins and processing providers
+            self.util.activatePlugins()
+            self.util.activateProcessingProviders()   
         elif self.dialog.action == SKIP:
             pass
         elif self.dialog.action == CANCEL:
@@ -106,17 +112,7 @@ class woisInstaller():
         else:
             self.unknownActionPopup()
         
-#         # start QGIS so that user can activate plugins    
-#         if self.dialog.action == NEXT:
-#             qgisExePath = os.path.join(osgeo4wDefaultDir,"bin","qgis.bat")
-#             self.util.execSubprocess(qgisExePath)
-#         elif self.dialog.action == SKIP:
-#             pass
-#         elif self.dialog.action == CANCEL:
-#             self.quit()
-#         else:
-#             self.unknownActionPopup()
-        
+
         ########################################################################
         # Install BEAM
         
@@ -143,8 +139,8 @@ class woisInstaller():
             srcPath = "BEAM additional modules"
             self.dialog = copyingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
             self.showDialog()
-            #self.util.copyFiles(srcPath, dstPath)
             self.util.modifyRamInBatFiles(os.path.join(dirPath,"bin",'gpt.bat'))
+            self.util.activateBEAMplugin(dirPath)
         elif self.dialog.action == SKIP:
             pass
         elif self.dialog.action == CANCEL:
@@ -173,7 +169,9 @@ class woisInstaller():
              
         # Set the amount of memory to be used with NEST GPT    
         if self.dialog.action == NEXT:
-            self.util.modifyRamInBatFiles(os.path.join(str(self.dialog.dirPathText.toPlainText()),'gpt.bat'))
+            dirPath = str(self.dialog.dirPathText.toPlainText())
+            self.util.modifyRamInBatFiles(os.path.join(dirPath,'gpt.bat'))
+            self.util.activateNESTplugin(dirPath)
         elif self.dialog.action == SKIP:
             pass
         elif self.dialog.action == CANCEL:
@@ -192,19 +190,32 @@ class woisInstaller():
         # run the R installation here as an outside process    
         if self.dialog.action == NEXT:
             self.util.execSubprocess(rInstall)
-             
-            dstPath = os.path.join(os.path.expanduser("~"),".qgis","sextante","rlibs")
-            srcPath = "R additional libraries"
-            self.dialog = extractingWaitWindow(self.util, os.path.join(srcPath, "libraries.zip"), dstPath) # show dialog because it might take some time on slower computers
+            self.dialog = rPostInstallWindow(rDefaultDir)
             self.showDialog()
-            #self.unzipArchive(os.path.join(srcPath, "libraries.zip"), dstPath )
         elif self.dialog.action == SKIP:
             pass
         elif self.dialog.action == CANCEL:
             return
         else:
             self.unknownActionPopup()
-             
+        
+        # Copy the R additional libraries   
+        if self.dialog.action == NEXT:
+            dirPath = str(self.dialog.dirPathText.toPlainText())
+            dstPath = os.path.join(dirPath,"library")
+            srcPath = "R additional libraries"
+            self.dialog = extractingWaitWindow(self.util, os.path.join(srcPath, "libraries.zip"), dstPath) # show dialog because it might take some time on slower computers
+            self.showDialog()
+            if is32bit:
+                self.util.activateRplugin(dirPath, "false")
+            else:
+                self.util.activateRplugin(dirPath, "true")
+        elif self.dialog.action == SKIP:
+            pass
+        elif self.dialog.action == CANCEL:
+            return
+        else:
+            self.unknownActionPopup()      
              
         ########################################################################
         # Install PostGIS
@@ -280,12 +291,13 @@ class woisInstaller():
              
         if self.dialog.action == NEXT:
             # copy the DTU customised MWSWAT 2009 installation
-            mwswatPath = os.path.join(str(self.dialog.dirPathText.toPlainText()),"Plugins","MWSWAT2009")
-            dstPath = os.path.join(mwswatPath,'swat2009DtuEnvVers0.1')
-            srcPath = "MWSWAT additional software\\swat2009DtuEnvVers0.1"
+            dirPath = str(self.dialog.dirPathText.toPlainText())
+            mwswatPath = os.path.join(dirPath,"Plugins","MWSWAT2009")
+            dstPath = os.path.join(mwswatPath,'swat2009DtuEnvVers0.2')
+            srcPath = "MWSWAT additional software\\swat2009DtuEnvVers0.2"
             self.dialog = copyingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
             self.showDialog()
-            #self.copyFiles(srcPath, dstPath)
+            
             # copy and rename the customised MWSWAT exe
             if os.path.isfile(os.path.join(mwswatPath,"swat2009rev481.exe_old")):
                 os.remove(os.path.join(mwswatPath,"swat2009rev481.exe_old"))
@@ -299,7 +311,8 @@ class woisInstaller():
             # copy PEST
             self.dialog = copyingWaitWindow(self.util, "MWSWAT additional software\\PEST", os.path.join(mwswatPath,"PEST")) # show dialog because it might take some time on slower computers
             self.showDialog()
-            #self.copyFiles("MWSWAT additional software\\PEST", os.path.join(mwswatPath,"PEST"))
+            # activate the plugin
+            self.util.activateSWATplugin(dirPath)
         elif self.dialog.action == SKIP:
             pass
         elif self.dialog.action == CANCEL:
@@ -325,6 +338,8 @@ class Utilities(QtCore.QObject):
     def __init__(self):
         
         QtCore.QObject.__init__(self)
+        # QGIS and processing settings
+        self.qsettings = QtCore.QSettings("QGIS", "QGIS2")
         
     def execSubprocess(self, command):
         # command should be a path to an exe file so check if it exists
@@ -332,7 +347,7 @@ class Utilities(QtCore.QObject):
             msgBox = QtGui.QMessageBox()
             msgBox.setText("Could not find the installation file for this component!\n\n Skipping to next component")
             msgBox.exec_()
-            self.dialog.action = SKIP
+            #self.dialog.action = SKIP
             return
             
         proc = subprocess.Popen(
@@ -418,7 +433,7 @@ class Utilities(QtCore.QObject):
         tempFile.close()
         with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
             for line in infile:
-                line = re.sub(r"-Xmx\d{4}M", "-Xmx"+str(int(totalRam*0.70))+"M", line)
+                line = re.sub(r"-Xmx\d{4}M", "-Xmx"+str(int(totalRam*0.60))+"M", line)
                 outfile.write(line)
         tempDir = os.path.dirname(tempFilePath)
         if os.path.isfile(os.path.join(tempDir,"gpt.bat")):
@@ -447,7 +462,54 @@ class Utilities(QtCore.QObject):
         memoryStatus.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
         kernel32.GlobalMemoryStatusEx(ctypes.byref(memoryStatus))
         return (memoryStatus.ullTotalPhys)
+    
+    def setQGISSettings(self, name, value):
+        self.qsettings.setValue(name, value)
+    
+    def activatePlugins(self):
+        self.setQGISSettings("PythonPlugins/processing_workflow", "true")
+        self.setQGISSettings("PythonPlugins/openlayers_plugin", "true")
+        self.setQGISSettings("PythonPlugins/photo2shape", "true")
+        self.setQGISSettings("PythonPlugins/pointsamplingtool", "true")
+        self.setQGISSettings("PythonPlugins/processing", "true")
+        self.setQGISSettings("PythonPlugins/temporalprofiletool", "true")
+        self.setQGISSettings("PythonPlugins/valuetool", "true")
+        self.setQGISSettings("plugins/zonalstatisticsplugin", "true")              
         
+    def activateProcessingProviders(self):
+        self.setQGISSettings("Processing/configuration/ACTIVATE_GRASS70", "false")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_GRASS", "true")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_MODEL", "true")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_OTB", "true")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_QGIS", "true")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_SAGA", "true")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_SCRIPT", "true")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_WORKFLOW", "true")
+        self.setQGISSettings("Processing/configuration/GRASS_LOG_COMMANDS", "true")
+        self.setQGISSettings("Processing/configuration/GRASS_LOG_CONSOLE", "true")
+        self.setQGISSettings("Processing/configuration/SAGA_LOG_COMMANDS", "true")
+        self.setQGISSettings("Processing/configuration/SAGA_LOG_CONSOLE", "true")
+        self.setQGISSettings("Processing/configuration/USE_FILENAME_AS_LAYER_NAME", "true")
+    
+    def activateBEAMplugin(self, dirPath):
+        self.setQGISSettings("PythonPlugins/processing_gpf", "true")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_BEAM", "true")
+        self.setQGISSettings("Processing/configuration/BEAM_FOLDER", dirPath)
+        
+    def activateNESTplugin(self, dirPath):
+        self.setQGISSettings("PythonPlugins/processing_gpf", "true")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_NEST", "true")
+        self.setQGISSettings("Processing/configuration/NEST_FOLDER", dirPath)
+        
+    def activateRplugin(self, dirPath, use64):
+        self.setQGISSettings("Processing/configuration/ACTIVATE_R", "true")
+        self.setQGISSettings("Processing/configuration/R_FOLDER", dirPath)
+        self.setQGISSettings("Processing/configuration/R_USE64", use64)
+        
+    def activateSWATplugin(self, dirPath):
+        self.setQGISSettings("PythonPlugins/processing_SWAT", "true")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_WG9HM", "true")
+        self.setQGISSettings("Processing/configuration/MAPWINDOW_FOLDER", dirPath)
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
