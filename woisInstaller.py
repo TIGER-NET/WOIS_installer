@@ -10,7 +10,6 @@ from installerGUI import osgeo4wInstallWindow, rInstallWindow, postgreInstallWin
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, pluginsInstructionsWindow, finishWindow
 from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
 from installerGUI import CANCEL,SKIP,NEXT
-from QGISSettings import QGISSettings
 import sys
 import os
 import shutil
@@ -47,7 +46,7 @@ class woisInstaller():
                 rInstall = os.path.join(installationsDir, "R-3.1.0-win.exe")
                 postgreInstall = os.path.join(installationsDir, "postgresql-9.3.4-3-windows.exe")
                 postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x32-setup-2.1.3-1.exe")
-                mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v48Final-installer.exe")
+                mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v488SR-installer.exe")
                 mwswatInstall = os.path.join(installationsDir, "MWSWAT2009.exe")
                 swateditorInstall = "MWSWAT additional software\\SwatEditor_Install\\Setup.exe"
             else:
@@ -59,7 +58,7 @@ class woisInstaller():
                 rInstall = os.path.join(installationsDir, "R-3.1.0-win.exe")
                 postgreInstall = os.path.join(installationsDir, "postgresql-9.3.4-3-windows-x64.exe")
                 postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x64-setup-2.1.3-1.exe")
-                mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v48Final-installer.exe")
+                mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v488SR-installer.exe")
                 mwswatInstall = os.path.join(installationsDir, "MWSWAT2009.exe")
                 swateditorInstall = "MWSWAT additional software\\SwatEditor_Install\\Setup.exe"
             # select default installation directories for 32 or 64 bit install
