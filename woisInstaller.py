@@ -140,6 +140,9 @@ class woisInstaller():
             self.showDialog()
             self.util.modifyRamInBatFiles(os.path.join(dirPath,"bin",'gpt.bat'))
             self.util.activateBEAMplugin(dirPath)
+            # Temporary fix for https://github.com/TIGER-NET/Processing-GPF/issues/1, until new version of BEAM is out.
+            # When that happens also remove beam-meris-radiometry-5.0.1.jar from "BEAM additional modules"
+            self.util.deleteFile(os.path.join(dstPath, "beam-meris-radiometry-5.0.jar"))
         elif self.dialog.action == SKIP:
             pass
         elif self.dialog.action == CANCEL:
@@ -366,6 +369,12 @@ class Utilities(QtCore.QObject):
         msgBox.exec_()
         self.quit() 
         
+    def deleteFile(self, filePath):
+        try:
+            os.remove(filePath)
+        except:
+            pass
+    
     def copyFiles(self, srcPath, dstPath, checkDstParentExists = True):
         
         # a simple check to see if we are copying to the right directory by making sure that 
