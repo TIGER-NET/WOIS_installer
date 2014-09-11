@@ -143,6 +143,7 @@ class woisInstaller():
             # Temporary fix for https://github.com/TIGER-NET/Processing-GPF/issues/1, until new version of BEAM is out.
             # When that happens also remove beam-meris-radiometry-5.0.1.jar from "BEAM additional modules"
             self.util.deleteFile(os.path.join(dstPath, "beam-meris-radiometry-5.0.jar"))
+            self.util.deleteFile(os.path.join(dstPath, "beam-meris-case2-regional-1.6.jar"))
         elif self.dialog.action == SKIP:
             pass
         elif self.dialog.action == CANCEL:
