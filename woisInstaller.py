@@ -34,6 +34,7 @@ from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstr
 from installerGUI import CANCEL,SKIP,NEXT
 import sys
 import os
+import errno
 import shutil
 import subprocess
 import _winreg
@@ -410,6 +411,15 @@ class Utilities(QtCore.QObject):
                 self.finished.emit()
                 return
         
+        if not self.checkWritePermissions(dstPath):
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n"+
+                           "Re-run the installer with administrator privileges or manually copy files from "+srcPath+
+                           " to "+dstPath+" after the installation process is over.")
+            msgBox.exec_()
+            self.finished.emit()
+            return
+        
         # for directories copy the whole directory recursivelly
         if os.path.isdir(srcPath):
             dir_util.copy_tree(srcPath, dstPath)
@@ -432,6 +442,15 @@ class Utilities(QtCore.QObject):
             msgBox.exec_()
             self.finished.emit()
             return
+        if not self.checkWritePermissions(dstPath):
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n"+
+                           "Re-run the installer with administrator privileges or manually unzip files from "+archivePath+
+                           " to "+dstPath+" after the installation process is over.")
+            msgBox.exec_()
+            self.finished.emit()
+            return
+        
         if not os.path.isdir(dstPath):
             os.makedirs(dstPath)
         
@@ -439,6 +458,22 @@ class Utilities(QtCore.QObject):
         archive.extractall(dstPath)
         archive.close()
         self.finished.emit()
+        
+    def checkWritePermissions(self, dstPath):
+        try:
+            fp = open(os.path.join(dstPath,"test"), 'w')
+        except IOError as e:
+            if e.errno == errno.EACCES:
+                return False
+            else:
+                return False
+        else:
+            fp.close()
+            try:
+                os.remove(os.path.join(dstPath,"test"))
+            except:
+                pass
+            return True
                 
     def modifyRamInBatFiles(self, batFilePath):
         # Check how much RAM the system has. Only works in Windows
