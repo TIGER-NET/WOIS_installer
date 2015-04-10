@@ -242,29 +242,29 @@ class beamPostInstallWindow(postInstallWindow):
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install BEAM", None))
 
 # NEST        
-class nestInstallWindow(installWindow):
+class s1tbxInstallWindow(installWindow):
     def __init__(self):
         installWindow.__init__(self)
-        self.componentLogoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/nestLogo.png")))
+        self.componentLogoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/s1tbxLogo.png")))
         
     def retranslateUi(self, MainWindow):
-        super(nestInstallWindow, self).retranslateUi(MainWindow)
-        self.topLabel.setText(_translate("MainWindow", "NEST is a software for analyzing radar data derived with satellites operated by European Space Agency (ESA) and other organisation.", None))
-        self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the NEST installer will start. In the installer you will be asked to accept the NEST license conditions followed by a couple of installation questions. In all the questions you can keep the default answers by clicking \"Next >\" until the installation starts.", None))
-        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install NEST", None))   
+        super(s1tbxInstallWindow, self).retranslateUi(MainWindow)
+        self.topLabel.setText(_translate("MainWindow", "Sentinel-1 Toolbox is a software for analyzing radar data derived with satellites operated by European Space Agency (ESA) and other organisation.", None))
+        self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the S-1 Toolbox installer will start. In the installer you will be asked to accept the S-1 Toolbox license conditions followed by a couple of installation questions. In all the questions you can keep the default answers by clicking \"Next >\" until the installation starts.", None))
+        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install Sentinel-1 Toolbox", None))   
         
-class nestPostInstallWindow(postInstallWindow):
+class s1tbxPostInstallWindow(postInstallWindow):
     def __init__(self, defaultPath):
         self.defaultPath = defaultPath
         postInstallWindow.__init__(self)
-        self.componentLogoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/nestLogo.png")))
+        self.componentLogoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/s1tbxLogo.png")))
         
     def retranslateUi(self, MainWindow):
-        super(nestPostInstallWindow, self).retranslateUi(MainWindow)
-        self.topLabel.setText(_translate("MainWindow", "NEST is a software for analyzing radar data derived with satellites operated by European Space Agency (ESA) and other organisation.", None))
-        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for NEST. If you changed the NEST installation directory during the previous step, make sure that you update the path to the directory below.", None))
+        super(s1tbxPostInstallWindow, self).retranslateUi(MainWindow)
+        self.topLabel.setText(_translate("MainWindow", "Sentinel-1 Toolbox is a software for analyzing radar data derived with satellites operated by European Space Agency (ESA) and other organisation.", None))
+        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for S-1 Toolbox. If you changed the S-1 Toolbox installation directory during the previous step, make sure that you update the path to the directory below.", None))
         self.dirPathText.setPlainText(_translate("MainWindow", self.defaultPath, None))
-        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install NEST", None))
+        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install Sentinel-1 Toolbox", None))
                 
 # R
 class rInstallWindow(installWindow):

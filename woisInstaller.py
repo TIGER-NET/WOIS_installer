@@ -27,7 +27,7 @@
 """
 
 from PyQt4 import QtCore, QtGui
-from  installerGUI import  installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, nestInstallWindow, nestPostInstallWindow 
+from  installerGUI import  installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, s1tbxInstallWindow, s1tbxPostInstallWindow 
 from installerGUI import osgeo4wInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, pluginsInstructionsWindow, finishWindow
 from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
@@ -65,10 +65,10 @@ class woisInstaller():
                 installationsDir = "Installations_x32"
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
                 beamInstall = os.path.join(installationsDir, "beam_5.0_win32_installer.exe")
-                nestInstall = os.path.join(installationsDir, "NEST-5.1-windows-installer.exe")
-                rInstall = os.path.join(installationsDir, "R-3.1.0-win.exe")
-                postgreInstall = os.path.join(installationsDir, "postgresql-9.3.4-3-windows.exe")
-                postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x32-setup-2.1.3-1.exe")
+                s1tbxInstall = os.path.join(installationsDir, "s1tbx_1.1.0_win32_installer.exe")
+                rInstall = os.path.join(installationsDir, "R-3.1.3-win.exe")
+                postgreInstall = os.path.join(installationsDir, "postgresql-9.3.6-2-windows.exe")
+                postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x32-setup-2.1.5-1.exe")
                 mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v488SR-installer.exe")
                 mwswatInstall = os.path.join(installationsDir, "MWSWAT2009.exe")
                 swateditorInstall = "MWSWAT additional software\\SwatEditor_Install\\Setup.exe"
@@ -77,26 +77,26 @@ class woisInstaller():
                 installationsDir = "Installations_x64"
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
                 beamInstall = os.path.join(installationsDir, "beam_5.0_win64_installer.exe")
-                nestInstall = os.path.join(installationsDir, "NEST-5.1-windows64-installer.exe")
-                rInstall = os.path.join(installationsDir, "R-3.1.0-win.exe")
-                postgreInstall = os.path.join(installationsDir, "postgresql-9.3.4-3-windows-x64.exe")
-                postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x64-setup-2.1.3-1.exe")
+                s1tbxInstall = os.path.join(installationsDir, "s1tbx_1.1.0_win64_installer.exe")
+                rInstall = os.path.join(installationsDir, "R-3.1.3-win.exe")
+                postgreInstall = os.path.join(installationsDir, "postgresql-9.3.6-2-windows-x64.exe")
+                postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x64-setup-2.1.5-2.exe")
                 mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v488SR-installer.exe")
                 mwswatInstall = os.path.join(installationsDir, "MWSWAT2009.exe")
                 swateditorInstall = "MWSWAT additional software\\SwatEditor_Install\\Setup.exe"
             # select default installation directories for 32 or 64 bit install
             if is32bit:
                 osgeo4wDefaultDir = "C:\\OSGeo4W"
-                nestDefaultDir = "C:\\Program Files\\NEST"
+                s1tbxDefaultDir = "C:\\Program Files\\S1TBX"
                 beamDefaultDir = "C:\\Program Files\\beam-5.0"
                 mapwindowDefaultDir = "C:\\Program Files\\MapWindow"
-                rDefaultDir = "C:\\Program Files\\R\\R-3.1.0"
+                rDefaultDir = "C:\\Program Files\\R\\R-3.1.3"
             else:
                 osgeo4wDefaultDir = "C:\\OSGeo4W" # in next version change this one to OSGeo4W64
-                nestDefaultDir = "C:\\Program Files\\NEST"
+                s1tbxDefaultDir = "C:\\Program Files\\S1TBX"
                 beamDefaultDir = "C:\\Program Files\\beam-5.0"
                 mapwindowDefaultDir = "C:\\Program Files (x86)\\MapWindow"
-                rDefaultDir = "C:\\Program Files\\R\\R-3.1.0"
+                rDefaultDir = "C:\\Program Files\\R\\R-3.1.3"
                 
         elif self.dialog.action == CANCEL:
             return  
@@ -122,6 +122,11 @@ class woisInstaller():
             # copy the plugins
             dstPath = os.path.join(os.path.expanduser("~"),".qgis2","python")
             srcPath = os.path.join("QGIS WOIS plugins", "plugins.zip")
+            self.dialog = extractingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
+            self.showDialog()
+            # copy scripts and models
+            dstPath = os.path.join(os.path.expanduser("~"),".qgis2","processing")
+            srcPath = os.path.join("QGIS WOIS plugins", "scripts_and_models.zip")
             self.dialog = extractingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
             self.showDialog()
             # activate plugins and processing providers
@@ -165,8 +170,8 @@ class woisInstaller():
             self.util.activateBEAMplugin(dirPath)
             # Temporary fix for https://github.com/TIGER-NET/Processing-GPF/issues/1, until new version of BEAM is out.
             # When that happens also remove beam-meris-radiometry-5.0.1.jar from "BEAM additional modules"
-            self.util.deleteFile(os.path.join(dstPath, "beam-meris-radiometry-5.0.jar"))
-            self.util.deleteFile(os.path.join(dstPath, "beam-meris-case2-regional-1.6.jar"))
+            #self.util.deleteFile(os.path.join(dstPath, "beam-meris-radiometry-5.0.jar"))
+            #self.util.deleteFile(os.path.join(dstPath, "beam-meris-case2-regional-1.6.jar"))
         elif self.dialog.action == SKIP:
             pass
         elif self.dialog.action == CANCEL:
@@ -175,16 +180,16 @@ class woisInstaller():
             self.unknownActionPopup() 
                  
         ########################################################################
-        # Install NEST
+        # Install S1 Toolbox
          
         if not self.dialog.action == CANCEL:
-            self.dialog = nestInstallWindow();
+            self.dialog = s1tbxInstallWindow();
             self.showDialog()
          
         # run the NEST installation here as an outside process    
         if self.dialog.action == NEXT:
-            self.util.execSubprocess(nestInstall)
-            self.dialog =  nestPostInstallWindow(nestDefaultDir);
+            self.util.execSubprocess(s1tbxInstall)
+            self.dialog =  s1tbxPostInstallWindow(s1tbxDefaultDir);
             self.showDialog()
         elif self.dialog.action == SKIP:
             pass
@@ -197,7 +202,7 @@ class woisInstaller():
         if self.dialog.action == NEXT:
             dirPath = str(self.dialog.dirPathText.toPlainText())
             self.util.modifyRamInBatFiles(os.path.join(dirPath,'gpt.bat'))
-            self.util.activateNESTplugin(dirPath)
+            self.util.activateS1TBXplugin(dirPath)
         elif self.dialog.action == SKIP:
             pass
         elif self.dialog.action == CANCEL:
@@ -411,6 +416,7 @@ class Utilities(QtCore.QObject):
                 self.finished.emit()
                 return
         
+        # checkWritePremissions alsoe creates the directory if it doesn't exist yet
         if not self.checkWritePermissions(dstPath):
             msgBox = QtGui.QMessageBox()
             msgBox.setText("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n"+
@@ -425,8 +431,6 @@ class Utilities(QtCore.QObject):
             dir_util.copy_tree(srcPath, dstPath)
         # for files create destination directory is necessary and copy the file
         elif os.path.isfile(srcPath):
-            if not os.path.isdir(dstPath):
-                os.makedirs(dstPath)
             shutil.copy(srcPath, dstPath)
         else:
             msgBox = QtGui.QMessageBox()
@@ -442,6 +446,8 @@ class Utilities(QtCore.QObject):
             msgBox.exec_()
             self.finished.emit()
             return
+        
+        # checkWritePremissions alsoe creates the directory if it doesn't exist yet
         if not self.checkWritePermissions(dstPath):
             msgBox = QtGui.QMessageBox()
             msgBox.setText("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n"+
@@ -451,9 +457,6 @@ class Utilities(QtCore.QObject):
             self.finished.emit()
             return
         
-        if not os.path.isdir(dstPath):
-            os.makedirs(dstPath)
-        
         archive = ZipFile(archivePath)
         archive.extractall(dstPath)
         archive.close()
@@ -461,6 +464,8 @@ class Utilities(QtCore.QObject):
         
     def checkWritePermissions(self, dstPath):
         try:
+            if not os.path.isdir(dstPath):
+                os.makedirs(dstPath)
             fp = open(os.path.join(dstPath,"test"), 'w')
         except IOError as e:
             if e.errno == errno.EACCES:
@@ -562,10 +567,10 @@ class Utilities(QtCore.QObject):
         self.setQGISSettings("Processing/configuration/ACTIVATE_BEAM", "true")
         self.setQGISSettings("Processing/configuration/BEAM_FOLDER", dirPath)
         
-    def activateNESTplugin(self, dirPath):
+    def activateS1TBXplugin(self, dirPath):
         self.setQGISSettings("PythonPlugins/processing_gpf", "true")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_NEST", "true")
-        self.setQGISSettings("Processing/configuration/NEST_FOLDER", dirPath)
+        self.setQGISSettings("Processing/configuration/ACTIVATE_S1TBX", "true")
+        self.setQGISSettings("Processing/configuration/S1TBX_FOLDER", dirPath)
         
     def activateRplugin(self, dirPath, use64):
         self.setQGISSettings("Processing/configuration/ACTIVATE_R", "true")
