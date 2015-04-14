@@ -49,16 +49,14 @@ class woisInstaller():
 
     def __init__(self):
         self.util = Utilities()
-        self.runInstaller()
-        
         
     def runInstaller (self):
         ########################################################################
         # welcome window with license
         self.dialog =  installerWelcomeWindow();
-        self.showDialog()
+        res = self.showDialog()
         
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             # select installation files for 32 or 64 bit install
             if self.dialog.osComboBox.itemText(self.dialog.osComboBox.currentIndex()) == "32 bit":
                 is32bit = True
@@ -98,26 +96,26 @@ class woisInstaller():
                 mapwindowDefaultDir = "C:\\Program Files (x86)\\MapWindow"
                 rDefaultDir = "C:\\Program Files\\R\\R-3.1.3"
                 
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return  
         else:
             self.unknownActionPopup() 
         
         ########################################################################
         # Information about uninstalling old version
-        if not self.dialog.action == CANCEL:
-            self.dialog = uninstallInstructionsWindow();
-            self.showDialog()
+        self.dialog = uninstallInstructionsWindow();
+        res = self.showDialog()
+        if res == CANCEL:
+            return 
         
         ########################################################################
         # Install OSGeo4W (QGIS, OTB, SAGA, GRASS)
         
-        if not self.dialog.action == CANCEL:
-            self.dialog = osgeo4wInstallWindow();
-            self.showDialog()
+        self.dialog = osgeo4wInstallWindow();
+        res = self.showDialog()
         
         # run the OSGeo4W installation here as an outside process    
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             self.util.execSubprocess(osgeo4wInstall)
             # copy the plugins
             dstPath = os.path.join(os.path.expanduser("~"),".qgis2","python")
@@ -132,9 +130,9 @@ class woisInstaller():
             # activate plugins and processing providers
             self.util.activatePlugins()
             self.util.activateProcessingProviders()   
-        elif self.dialog.action == SKIP:
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup()
@@ -143,24 +141,23 @@ class woisInstaller():
         ########################################################################
         # Install BEAM
         
-        if not self.dialog.action == CANCEL:
-            self.dialog = beamInstallWindow();
-            self.showDialog()    
+        self.dialog = beamInstallWindow();
+        res = self.showDialog()    
          
         # run the BEAM installation here as an outside process    
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             self.util.execSubprocess(beamInstall)
             self.dialog =  beamPostInstallWindow(beamDefaultDir);
-            self.showDialog()
-        elif self.dialog.action == SKIP:
+            res = self.showDialog()
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup()  
          
         # copy the additional BEAM modules and set the amount of memory to be used with GPT    
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             dirPath = str(self.dialog.dirPathText.toPlainText())
             dstPath = os.path.join(dirPath,"modules")
             srcPath = "BEAM additional modules"
@@ -172,9 +169,9 @@ class woisInstaller():
             # When that happens also remove beam-meris-radiometry-5.0.1.jar from "BEAM additional modules"
             #self.util.deleteFile(os.path.join(dstPath, "beam-meris-radiometry-5.0.jar"))
             #self.util.deleteFile(os.path.join(dstPath, "beam-meris-case2-regional-1.6.jar"))
-        elif self.dialog.action == SKIP:
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup() 
@@ -182,30 +179,29 @@ class woisInstaller():
         ########################################################################
         # Install S1 Toolbox
          
-        if not self.dialog.action == CANCEL:
-            self.dialog = s1tbxInstallWindow();
-            self.showDialog()
+        self.dialog = s1tbxInstallWindow();
+        res = self.showDialog()
          
         # run the NEST installation here as an outside process    
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             self.util.execSubprocess(s1tbxInstall)
             self.dialog =  s1tbxPostInstallWindow(s1tbxDefaultDir);
-            self.showDialog()
-        elif self.dialog.action == SKIP:
+            res = self.showDialog()
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup()
              
         # Set the amount of memory to be used with NEST GPT    
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             dirPath = str(self.dialog.dirPathText.toPlainText())
             self.util.modifyRamInBatFiles(os.path.join(dirPath,'gpt.bat'))
             self.util.activateS1TBXplugin(dirPath)
-        elif self.dialog.action == SKIP:
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup() 
@@ -214,24 +210,23 @@ class woisInstaller():
         ########################################################################
         # Install R
          
-        if not self.dialog.action == CANCEL:
-            self.dialog = rInstallWindow();
-            self.showDialog()
+        self.dialog = rInstallWindow();
+        res = self.showDialog()
          
         # run the R installation here as an outside process    
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             self.util.execSubprocess(rInstall)
             self.dialog = rPostInstallWindow(rDefaultDir)
-            self.showDialog()
-        elif self.dialog.action == SKIP:
+            res = self.showDialog()
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup()
         
         # Copy the R additional libraries   
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             dirPath = str(self.dialog.dirPathText.toPlainText())
             dstPath = os.path.join(dirPath,"library")
             srcPath = "R additional libraries"
@@ -241,9 +236,9 @@ class woisInstaller():
                 self.util.activateRplugin(dirPath, "false")
             else:
                 self.util.activateRplugin(dirPath, "true")
-        elif self.dialog.action == SKIP:
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup()      
@@ -251,28 +246,27 @@ class woisInstaller():
         ########################################################################
         # Install PostGIS
          
-        if not self.dialog.action == CANCEL:
-            self.dialog = postgreInstallWindow();
-            self.showDialog()
+        self.dialog = postgreInstallWindow();
+        res = self.showDialog()
          
         # run the postgresql installer as an outside process
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             self.util.execSubprocess(postgreInstall)
-            self.dialog = postgisInstallWindow();
+            res = self.dialog = postgisInstallWindow();
             self.showDialog()    
-        elif self.dialog.action == SKIP:
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup()    
          
         # run the postgis installer as an outside process
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             self.util.execSubprocess(postgisInstall)  
-        elif self.dialog.action == SKIP:
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup()  
@@ -280,47 +274,46 @@ class woisInstaller():
         ########################################################################
         # Install MapWindow, SWAT and PEST
          
-        if not self.dialog.action == CANCEL:
-            self.dialog = mapwindowInstallWindow();
-            self.showDialog()  
+        self.dialog = mapwindowInstallWindow();
+        res = self.showDialog()  
          
         # run the MapWindow installer as an outside process
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             self.util.execSubprocess(mapwindowInstall)
             self.dialog = mwswatInstallWindow();
-            self.showDialog()    
-        elif self.dialog.action == SKIP:
+            res = self.showDialog()    
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup()
          
         # run the MWSWAT installer as an outside process    
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             self.util.execSubprocess(mwswatInstall)
             self.dialog = swateditorInstallWindow();
-            self.showDialog()    
-        elif self.dialog.action == SKIP:
+            res = self.showDialog()    
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup()
          
         # run the SWAT editor installer as an outside process    
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             self.util.execSubprocess(swateditorInstall)
             self.dialog = mwswatPostInstallWindow(mapwindowDefaultDir);
-            self.showDialog()    
-        elif self.dialog.action == SKIP:
+            res = self.showDialog()    
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup()
              
-        if self.dialog.action == NEXT:
+        if res == NEXT:
             # copy the DTU customised MWSWAT 2009 installation
             dirPath = str(self.dialog.dirPathText.toPlainText())
             mwswatPath = os.path.join(dirPath,"Plugins","MWSWAT2009")
@@ -344,20 +337,24 @@ class woisInstaller():
             self.showDialog()
             # activate the plugin
             self.util.activateSWATplugin(dirPath)
-        elif self.dialog.action == SKIP:
+        elif res == SKIP:
             pass
-        elif self.dialog.action == CANCEL:
+        elif res == CANCEL:
             return
         else:
             self.unknownActionPopup() 
          
         # Finish
-        if not self.dialog.action == CANCEL:
-            self.dialog = finishWindow();
-            self.showDialog()     
+        self.dialog = finishWindow();
+        self.showDialog()     
             
     def showDialog(self):
-        self.dialog.exec_()
+        return(self.dialog.exec_())
+    
+    def unknownActionPopup(self):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setText("Unknown action chosen in the previous installation step. Ask the developer to check the installation script!\n\n Quitting installation")
+        msgBox.exec_()
         
     
     ##########################################
@@ -390,13 +387,7 @@ class Utilities(QtCore.QObject):
                 universal_newlines=True,
                 ).stdout   
         for line in iter(proc.readline, ""):
-            pass
-                
-    def unknownActionPopup(self):
-        msgBox = QtGui.QMessageBox()
-        msgBox.setText("Unknown action chosen in the previous installation step. Ask the developer to check the installation script!\n\n Quitting installation")
-        msgBox.exec_()
-        self.quit() 
+            pass 
         
     def deleteFile(self, filePath):
         try:
@@ -585,4 +576,5 @@ class Utilities(QtCore.QObject):
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     installer = woisInstaller()
+    installer.runInstaller()
     app.exec_()

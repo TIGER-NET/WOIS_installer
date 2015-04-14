@@ -55,127 +55,76 @@ NEXT = 2
 # Used to avoid overwriting the files produced by QtDesigner and pyuic4
 # Mostly assign actions to buttons and set up the dialog
 
-class installerWelcomeWindow(welcomeDialog.Ui_Dialog):
-    
+class installerBaseWindow():
     def __init__(self):
         self.MainWindow = QtGui.QDialog()
-        self.setupUi(self.MainWindow)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("images/WOIS.ico")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.MainWindow.setWindowIcon(icon)
+        
+    def exec_(self):
+        return(self.MainWindow.exec_())
+    
+    def cancel(self):
+        self.MainWindow.done(CANCEL)
+        
+    def next(self):
+        self.MainWindow.done(NEXT)
+        
+    def skip(self):
+        self.MainWindow.done(SKIP)
+
+class installerWelcomeWindow(installerBaseWindow, welcomeDialog.Ui_Dialog):
+    
+    def __init__(self):
+        installerBaseWindow.__init__(self)
+        self.setupUi(self.MainWindow)
         self.logoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/tigernetLogo.png")))
         self.osComboBox.addItem("32 bit")
         self.osComboBox.addItem("64 bit")
-        
-        self.action = CANCEL
 
-        QtCore.QObject.connect(self.beginButton, QtCore.SIGNAL("clicked()"), self.begin)
-        QtCore.QObject.connect(self.cancelButton, QtCore.SIGNAL("clicked()"), self.cancel)
-    
-    def exec_(self):
-        self.MainWindow.exec_()
-        
-    def cancel(self):
-        self.action = CANCEL
-        self.MainWindow.close()
-        
-    def begin(self):
-        self.action = NEXT
-        self.MainWindow.close()
-        
+        QtCore.QObject.connect(self.beginButton, QtCore.SIGNAL("clicked()"), self.next)
+        QtCore.QObject.connect(self.cancelButton, QtCore.SIGNAL("clicked()"), self.cancel)    
        
-class installWindow(installComponentDialog.Ui_Dialog):
+class installWindow(installerBaseWindow, installComponentDialog.Ui_Dialog):
     def __init__(self):
-        self.MainWindow = QtGui.QDialog()
+        installerBaseWindow.__init__(self)
         self.setupUi(self.MainWindow)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(_fromUtf8("images/WOIS.ico")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.MainWindow.setWindowIcon(icon)
         self.logoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/tigernetLogo.png")))
         
-        self.action = CANCEL
-        
-        QtCore.QObject.connect(self.installButton, QtCore.SIGNAL("clicked()"), self.install)
+        QtCore.QObject.connect(self.installButton, QtCore.SIGNAL("clicked()"), self.next)
         QtCore.QObject.connect(self.skipButton, QtCore.SIGNAL("clicked()"), self.skip)
         QtCore.QObject.connect(self.cancelButton, QtCore.SIGNAL("clicked()"), self.cancel)
     
-    def exec_(self):
-        self.MainWindow.exec_()
         
-    def install(self):
-        self.action = NEXT
-        self.MainWindow.close()
-        
-    def skip(self):
-        self.action = SKIP
-        self.MainWindow.close()
-        
-    def cancel(self):
-        self.action = CANCEL
-        self.MainWindow.close()
-        
-class postInstallWindow(postInstallComponentDialog.Ui_Dialog):
+class postInstallWindow(installerBaseWindow, postInstallComponentDialog.Ui_Dialog):
     def __init__(self):
-        self.MainWindow = QtGui.QDialog()
+        installerBaseWindow.__init__(self)
         self.setupUi(self.MainWindow)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(_fromUtf8("images/WOIS.ico")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.MainWindow.setWindowIcon(icon)
         self.logoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/tigernetLogo.png")))
          
-        self.action = CANCEL
-        
         QtCore.QObject.connect(self.continueButton, QtCore.SIGNAL("clicked()"), self.next)
         QtCore.QObject.connect(self.cancelButton, QtCore.SIGNAL("clicked()"), self.cancel)
         QtCore.QObject.connect(self.dirSelectionButton, QtCore.SIGNAL("clicked()"), self.dirSelection)
-        
-    def exec_(self):
-        self.MainWindow.exec_()
-    
-    def next(self):
-        self.action = NEXT
-        self.MainWindow.close()    
-        
-    def cancel(self):
-        self.action = CANCEL
-        self.MainWindow.close()
         
     def dirSelection(self):
         path = QtGui.QFileDialog.getExistingDirectory(directory=self.dirPathText.toPlainText())
         if not path.isNull():
             self.dirPathText.setPlainText(_translate("MainWindow", path, None))
    
-class instructionsWindow(componentInstructionsDialog.Ui_Dialog):
+class instructionsWindow(installerBaseWindow, componentInstructionsDialog.Ui_Dialog):
     
     # This window can have a reimplemented QDialog used as the main window to allow
     # for multithreaded operations while the window is displayed
     def __init__(self, MainWindow = None):
-        if MainWindow:
-            self.MainWindow = MainWindow
-        else:
-            self.MainWindow = QtGui.QDialog()
+
+        installerBaseWindow.__init__(self)
         self.setupUi(self.MainWindow)
-        icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(_fromUtf8("images/WOIS.ico")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
-        self.MainWindow.setWindowIcon(icon)
         self.logoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/tigernetLogo.png")))
-        
-        self.action = CANCEL
         
         QtCore.QObject.connect(self.continueButton, QtCore.SIGNAL("clicked()"), self.next)
         QtCore.QObject.connect(self.cancelButton, QtCore.SIGNAL("clicked()"), self.cancel)
 
-    def exec_(self):
-        self.MainWindow.exec_()
-
-    def next(self):
-        self.action = NEXT
-        self.MainWindow.close()  
-        
-    def cancel(self):
-        self.action = CANCEL
-        self.MainWindow.close()
-           
         
 ###############################################################################
 # Child classes
