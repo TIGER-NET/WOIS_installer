@@ -53,7 +53,7 @@ class woisInstaller():
     def runInstaller (self):
         ########################################################################
         # welcome window with license
-        self.dialog =  installerWelcomeWindow();
+        self.dialog =  installerWelcomeWindow()
         res = self.showDialog()
         
         if res == NEXT:
@@ -90,13 +90,14 @@ class woisInstaller():
                 mapwindowDefaultDir = "C:\\Program Files\\MapWindow"
                 rDefaultDir = "C:\\Program Files\\R\\R-3.1.3"
             else:
-                osgeo4wDefaultDir = "C:\\OSGeo4W" # in next version change this one to OSGeo4W64
+                osgeo4wDefaultDir = "C:\\OSGeo4W64"
                 s1tbxDefaultDir = "C:\\Program Files\\S1TBX"
                 beamDefaultDir = "C:\\Program Files\\beam-5.0"
                 mapwindowDefaultDir = "C:\\Program Files (x86)\\MapWindow"
                 rDefaultDir = "C:\\Program Files\\R\\R-3.1.3"
                 
         elif res == CANCEL:
+            del self.dialog
             return  
         else:
             self.unknownActionPopup() 
@@ -106,7 +107,8 @@ class woisInstaller():
         self.dialog = uninstallInstructionsWindow();
         res = self.showDialog()
         if res == CANCEL:
-            return 
+            del self.dialog
+            return
         
         ########################################################################
         # Install OSGeo4W (QGIS, OTB, SAGA, GRASS)
@@ -133,6 +135,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup()
@@ -152,6 +155,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup()  
@@ -172,6 +176,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup() 
@@ -190,6 +195,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup()
@@ -202,6 +208,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup() 
@@ -221,6 +228,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup()
@@ -239,6 +247,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup()      
@@ -257,6 +266,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup()    
@@ -267,6 +277,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup()  
@@ -285,6 +296,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup()
@@ -297,6 +309,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup()
@@ -309,6 +322,7 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup()
@@ -340,13 +354,15 @@ class woisInstaller():
         elif res == SKIP:
             pass
         elif res == CANCEL:
+            del self.dialog
             return
         else:
             self.unknownActionPopup() 
          
         # Finish
         self.dialog = finishWindow();
-        self.showDialog()     
+        self.showDialog() 
+        del self.dialog    
             
     def showDialog(self):
         return(self.dialog.exec_())
@@ -576,5 +592,7 @@ class Utilities(QtCore.QObject):
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     installer = woisInstaller()
-    installer.runInstaller()
+    # Fix to make sure that runInstaller is executed in the app event loop
+    QtCore.QTimer.singleShot(200, QtCore.SLOT(installer.runInstaller()));
     app.exec_()
+

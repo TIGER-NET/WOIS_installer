@@ -45,9 +45,10 @@ except AttributeError:
         return QtGui.QApplication.translate(context, text, disambig)
 
 # CONSTANTS
-CANCEL = -1
-SKIP = 1
-NEXT = 2 
+CANCEL = QtGui.QDialog.Rejected
+NEXT = QtGui.QDialog.Accepted
+SKIP = QtGui.QDialog.Accepted + 1
+ 
 
 
 ##################################################################################
