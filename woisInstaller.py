@@ -131,7 +131,7 @@ class woisInstaller():
             self.showDialog()
             # activate plugins and processing providers
             self.util.activatePlugins()
-            self.util.activateProcessingProviders()   
+            self.util.activateProcessingProviders(osgeo4wDefaultDir)   
         elif res == SKIP:
             pass
         elif res == CANCEL:
@@ -554,7 +554,7 @@ class Utilities(QtCore.QObject):
         self.setQGISSettings("PythonPlugins/valuetool", "true")
         self.setQGISSettings("plugins/zonalstatisticsplugin", "true")              
         
-    def activateProcessingProviders(self):
+    def activateProcessingProviders(self,osgeo4wDefaultDir):
         self.setQGISSettings("Processing/configuration/ACTIVATE_GRASS70", "false")
         self.setQGISSettings("Processing/configuration/ACTIVATE_GRASS", "true")
         self.setQGISSettings("Processing/configuration/ACTIVATE_MODEL", "true")
@@ -568,6 +568,14 @@ class Utilities(QtCore.QObject):
         self.setQGISSettings("Processing/configuration/SAGA_LOG_COMMANDS", "true")
         self.setQGISSettings("Processing/configuration/SAGA_LOG_CONSOLE", "true")
         self.setQGISSettings("Processing/configuration/USE_FILENAME_AS_LAYER_NAME", "true")
+        # GRASS_FOLDER depends on GRASS version and is not updated automatically so it should
+        # be set to the highest GRASS version present in the GRASS folder
+        try:
+            grassFolder = os.path.join(osgeo4wDefaultDir, 'apps', 'grass')
+            grassFolder = os.path.join(grassFolder, next(os.walk(grassFolder))[1][-1])
+            self.setQGISSettings("Processing/configuration/GRASS_FOLDER", grassFolder)
+        except:
+            pass
     
     def activateBEAMplugin(self, dirPath):
         self.setQGISSettings("PythonPlugins/processing_gpf", "true")
