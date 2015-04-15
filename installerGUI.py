@@ -57,8 +57,11 @@ SKIP = QtGui.QDialog.Accepted + 1
 # Mostly assign actions to buttons and set up the dialog
 
 class installerBaseWindow():
-    def __init__(self):
-        self.MainWindow = QtGui.QDialog()
+    def __init__(self, MainWindow = None):
+        if MainWindow:
+            self.MainWindow = MainWindow
+        else:
+            self.MainWindow = QtGui.QDialog()
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap(_fromUtf8("images/WOIS.ico")), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.MainWindow.setWindowIcon(icon)
@@ -119,7 +122,7 @@ class instructionsWindow(installerBaseWindow, componentInstructionsDialog.Ui_Dia
     # for multithreaded operations while the window is displayed
     def __init__(self, MainWindow = None):
 
-        installerBaseWindow.__init__(self)
+        installerBaseWindow.__init__(self, MainWindow)
         self.setupUi(self.MainWindow)
         self.logoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/tigernetLogo.png")))
         
