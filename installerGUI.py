@@ -155,17 +155,6 @@ class osgeo4wInstallWindow(installWindow):
         self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the OSGeo4W installer will start. The process should be automatic but if any question dialogs pop-up just click OK", None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install QGIS, Orfeo Toolbox and GRASS GIS", None))   
 
-# Instructions for activating WOIS plugins
-class pluginsInstructionsWindow(instructionsWindow):
-    def __init__(self):
-        instructionsWindow.__init__(self)
-     
-    def retranslateUi(self, MainWindow):
-        super(pluginsInstructionsWindow, self).retranslateUi(MainWindow)
-        self.topLabel.setText(_translate("MainWindow", "The different WOIS components are integrated into QGIS using plugins.", None))
-        self.instructionsMainLabel.setText(_translate("MainWindow", "After clicking on the \"Continue\" button QGIS will start. In the program select \"Plugins\" > \"Manage Plugins…\" from the main menu, find the 1-Band Raster Colour Table, OpenLayers, PostGIS manager, SEXTANTE, SEXTANT BEAM and NEST Provider, SEXTANTE Working Group 9 Hydrological Model Provider, WOIS Workflows and Zonal statistics plugins in the list and tick the boxes next to them and click OK. Afterwards close QGIS.", None))
-        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Activate plugins", None)) 
-        
 # BEAM       
 class beamInstallWindow(installWindow):
     def __init__(self):

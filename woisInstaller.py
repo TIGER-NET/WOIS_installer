@@ -29,7 +29,7 @@
 from PyQt4 import QtCore, QtGui
 from  installerGUI import  installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, s1tbxInstallWindow, s1tbxPostInstallWindow 
 from installerGUI import osgeo4wInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
-from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, pluginsInstructionsWindow, finishWindow
+from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, finishWindow
 from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
 from installerGUI import CANCEL,SKIP,NEXT
 import sys
