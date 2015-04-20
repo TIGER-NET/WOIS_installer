@@ -261,8 +261,8 @@ class woisInstaller():
         # run the postgresql installer as an outside process
         if res == NEXT:
             self.util.execSubprocess(postgreInstall)
-            res = self.dialog = postgisInstallWindow();
-            self.showDialog()    
+            self.dialog = postgisInstallWindow();
+            res = self.showDialog()    
         elif res == SKIP:
             pass
         elif res == CANCEL:
