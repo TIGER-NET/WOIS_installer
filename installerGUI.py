@@ -254,7 +254,7 @@ class postgisInstallWindow(installWindow):
     def retranslateUi(self, MainWindow):
         super(postgisInstallWindow, self).retranslateUi(MainWindow)
         self.topLabel.setText(_translate("MainWindow", "PostGIS is a geospatial database used by WOIS for storing certain types of data. It is not necessary to have it installed on every computer using WOIS, since the database can run from a central server. Therefore its installation is optional.", None))
-        self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the PostGIS installer will start. You need to accept the license and in then select both 'PostGIS' and 'Create spatial database'. Two steps later you will need to <b>enter the password set earlier during the installation</b> (e.g. waterinfo) and in the following step the name of the database (e.g. WOIS_local). If any questions pop up just click Yes.", None))
+        self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the PostGIS installer will start. You need to accept the license and then when choosing components to install select 'PostGIS' <b>but not 'Create spatial database'</b>. If any questions pop up just click Yes.", None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install PostGIS (Optional)", None)) 
         
 # MapWindow       
