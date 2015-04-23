@@ -122,6 +122,16 @@ class woisInstaller():
             # copy the plugins
             dstPath = os.path.join(os.path.expanduser("~"),".qgis2","python")
             srcPath = os.path.join("QGIS WOIS plugins", "plugins.zip")
+            # try to delete old plugins before copying the new ones to avoid conflicts
+            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'processing'))
+            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'processing_gpf'))
+            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'photo2shape'))
+            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'processing_workflow'))
+            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'processing_SWAT'))
+            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'openlayers_plugin'))
+            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'pointsamplingtool'))
+            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'temporalprofiletool'))
+            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'valuetool'))
             self.dialog = extractingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
             self.showDialog()
             # copy scripts and models
@@ -408,6 +418,12 @@ class Utilities(QtCore.QObject):
     def deleteFile(self, filePath):
         try:
             os.remove(filePath)
+        except:
+            pass
+        
+    def deleteDir(self, dirPath):
+        try:
+            shutil.rmtree(dirPath, ignore_errors = True)
         except:
             pass
     
