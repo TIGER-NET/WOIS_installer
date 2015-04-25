@@ -108,6 +108,7 @@ class postInstallWindow(installerBaseWindow, postInstallComponentDialog.Ui_Dialo
         self.logoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/tigernetLogo.png")))
          
         QtCore.QObject.connect(self.continueButton, QtCore.SIGNAL("clicked()"), self.next)
+        QtCore.QObject.connect(self.skipButton, QtCore.SIGNAL("clicked()"), self.skip)
         QtCore.QObject.connect(self.cancelButton, QtCore.SIGNAL("clicked()"), self.cancel)
         QtCore.QObject.connect(self.dirSelectionButton, QtCore.SIGNAL("clicked()"), self.dirSelection)
         
@@ -155,7 +156,7 @@ class osgeo4wInstallWindow(installWindow):
     def retranslateUi(self, MainWindow):
         super(osgeo4wInstallWindow, self).retranslateUi(MainWindow)
         self.topLabel.setText(_translate("MainWindow", "QGIS is the main GUI used by WOIS while Orfeo Toolbox and GRASS GIS provide many of the commonly used data processing functions. They are installed together through the OSGeo4W installer.", None))
-        self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the OSGeo4W installer will start. The process should be automatic but if any question dialogs pop-up just click OK", None))
+        self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the OSGeo4W installer will start. The process should be automatic but if any question dialogs pop-up just click OK.", None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install QGIS, Orfeo Toolbox and GRASS GIS", None))   
 
 # BEAM       
@@ -179,7 +180,7 @@ class beamPostInstallWindow(postInstallWindow):
     def retranslateUi(self, MainWindow):
         super(beamPostInstallWindow, self).retranslateUi(MainWindow)
         self.topLabel.setText(_translate("MainWindow", "BEAM is a software for analyzing optical and thermal data derived with satellites operated by European Space Agency (ESA) and other organisation.", None))
-        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for BEAM. If you changed the BEAM installation directory during the previous step, make sure that you update the path to the directory below.", None))
+        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for BEAM (activating plugins, copying extra libraries, etc.). If you changed the BEAM installation directory during the previous step (or skipped the step), make sure that you check the path to the directory below and update it if necessary.", None))
         self.dirPathText.setPlainText(_translate("MainWindow", self.defaultPath, None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install BEAM", None))
 
@@ -204,7 +205,7 @@ class s1tbxPostInstallWindow(postInstallWindow):
     def retranslateUi(self, MainWindow):
         super(s1tbxPostInstallWindow, self).retranslateUi(MainWindow)
         self.topLabel.setText(_translate("MainWindow", "Sentinel-1 Toolbox is a software for analyzing radar data derived with satellites operated by European Space Agency (ESA) and other organisation.", None))
-        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for S-1 Toolbox. If you changed the S-1 Toolbox installation directory during the previous step, make sure that you update the path to the directory below.", None))
+        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for S-1 Toolbox (activating plugins, copying extra libraries, etc.). If you changed the S-1 Toolbox installation directory during the previous step (or skipped the step), make sure that you check the path to the directory below and update it if necessary.", None))
         self.dirPathText.setPlainText(_translate("MainWindow", self.defaultPath, None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install Sentinel-1 Toolbox", None))
                 
@@ -229,7 +230,7 @@ class rPostInstallWindow(postInstallWindow):
     def retranslateUi(self, MainWindow):
         super(rPostInstallWindow, self).retranslateUi(MainWindow)
         self.topLabel.setText(_translate("MainWindow", "R is a statistical scripting language used by WOIS for various data processing tasks.", None))
-        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for R. If you changed the R installation directory during the previous step, make sure that you update the path to the directory below.", None))
+        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for R (activating plugins, copying extra libraries, etc.). If you changed the R installation directory during the previous step (or skipped the step), make sure that you check the path to the directory below and update it if necessary.", None))
         self.dirPathText.setPlainText(_translate("MainWindow", self.defaultPath, None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install R", None))
         

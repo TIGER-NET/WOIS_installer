@@ -2,7 +2,7 @@
 
 # Form implementation generated from reading ui file 'postInstallComponentDialog.ui'
 #
-# Created: Tue May 06 09:14:15 2014
+# Created: Fri Apr 24 14:41:01 2015
 #      by: PyQt4 UI code generator 4.10.2
 #
 # WARNING! All changes made in this file will be lost!
@@ -69,7 +69,7 @@ class Ui_Dialog(object):
         self.dirSelectionButton.setGeometry(QtCore.QRect(524, 250, 21, 23))
         self.dirSelectionButton.setObjectName(_fromUtf8("dirSelectionButton"))
         self.continueButton = QtGui.QPushButton(Dialog)
-        self.continueButton.setGeometry(QtCore.QRect(380, 420, 75, 23))
+        self.continueButton.setGeometry(QtCore.QRect(290, 420, 75, 23))
         self.continueButton.setObjectName(_fromUtf8("continueButton"))
         self.line_2 = QtGui.QFrame(Dialog)
         self.line_2.setGeometry(QtCore.QRect(20, 320, 531, 16))
@@ -86,6 +86,14 @@ class Ui_Dialog(object):
         self.componentLogoLabel.setScaledContents(False)
         self.componentLogoLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.componentLogoLabel.setObjectName(_fromUtf8("componentLogoLabel"))
+        self.skipButton = QtGui.QPushButton(Dialog)
+        self.skipButton.setGeometry(QtCore.QRect(380, 420, 75, 23))
+        self.skipButton.setObjectName(_fromUtf8("skipButton"))
+        self.bottomLabel1 = QtGui.QLabel(Dialog)
+        self.bottomLabel1.setGeometry(QtCore.QRect(20, 340, 511, 31))
+        self.bottomLabel1.setLocale(QtCore.QLocale(QtCore.QLocale.English, QtCore.QLocale.UnitedKingdom))
+        self.bottomLabel1.setWordWrap(True)
+        self.bottomLabel1.setObjectName(_fromUtf8("bottomLabel1"))
 
         self.retranslateUi(Dialog)
         QtCore.QMetaObject.connectSlotsByName(Dialog)
@@ -101,4 +109,6 @@ class Ui_Dialog(object):
         self.dirSelectionButton.setText(_translate("Dialog", "...", None))
         self.continueButton.setText(_translate("Dialog", "Continue", None))
         self.dirPathText.setPlainText(_translate("Dialog", "dfgdgfdgf", None))
+        self.skipButton.setText(_translate("Dialog", "Skip", None))
+        self.bottomLabel1.setText(_translate("Dialog", "If you do not want to install this WOIS component click \"Skip\" to go the installation of the next component. However, note that by doing so you will not get the full WOIS functionality.", None))
 

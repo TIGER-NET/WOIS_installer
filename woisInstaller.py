@@ -160,15 +160,19 @@ class woisInstaller():
         # run the BEAM installation here as an outside process    
         if res == NEXT:
             self.util.execSubprocess(beamInstall)
-            self.dialog =  beamPostInstallWindow(beamDefaultDir);
-            res = self.showDialog()
+            #self.dialog =  beamPostInstallWindow(beamDefaultDir);
+            #res = self.showDialog()
         elif res == SKIP:
             pass
         elif res == CANCEL:
             del self.dialog
             return
         else:
-            self.unknownActionPopup()  
+            self.unknownActionPopup() 
+            
+        # ask for post-installation even if user has skipped installation
+        self.dialog =  beamPostInstallWindow(beamDefaultDir);
+        res = self.showDialog()
          
         # copy the additional BEAM modules and set the amount of memory to be used with GPT    
         if res == NEXT:
@@ -200,8 +204,8 @@ class woisInstaller():
         # run the NEST installation here as an outside process    
         if res == NEXT:
             self.util.execSubprocess(s1tbxInstall)
-            self.dialog =  s1tbxPostInstallWindow(s1tbxDefaultDir);
-            res = self.showDialog()
+            #self.dialog =  s1tbxPostInstallWindow(s1tbxDefaultDir);
+            #res = self.showDialog()
         elif res == SKIP:
             pass
         elif res == CANCEL:
@@ -209,6 +213,10 @@ class woisInstaller():
             return
         else:
             self.unknownActionPopup()
+        
+        # ask for post-installation even if user has skipped installation
+        self.dialog =  s1tbxPostInstallWindow(s1tbxDefaultDir);
+        res = self.showDialog()
              
         # Set the amount of memory to be used with NEST GPT    
         if res == NEXT:
@@ -233,8 +241,8 @@ class woisInstaller():
         # run the R installation here as an outside process    
         if res == NEXT:
             self.util.execSubprocess(rInstall)
-            self.dialog = rPostInstallWindow(rDefaultDir)
-            res = self.showDialog()
+            #self.dialog = rPostInstallWindow(rDefaultDir)
+            #res = self.showDialog()
         elif res == SKIP:
             pass
         elif res == CANCEL:
@@ -242,6 +250,10 @@ class woisInstaller():
             return
         else:
             self.unknownActionPopup()
+        
+        # ask for post-installation even if user has skipped installation
+        self.dialog = rPostInstallWindow(rDefaultDir)
+        res = self.showDialog()
         
         # Copy the R additional libraries   
         if res == NEXT:
