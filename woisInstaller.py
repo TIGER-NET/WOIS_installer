@@ -181,7 +181,11 @@ class woisInstaller():
             srcPath = "BEAM additional modules"
             self.dialog = copyingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
             self.showDialog()
-            self.util.modifyRamInBatFiles(os.path.join(dirPath,"bin",'gpt.bat'))
+            # 32 bit systems usually have less RAM so assign less to BEAM
+            if is32bit:
+                self.util.modifyRamInBatFiles(os.path.join(dirPath,"bin",'gpt.bat'), 0.4)
+            else:
+                self.util.modifyRamInBatFiles(os.path.join(dirPath,"bin",'gpt.bat'), 0.6)
             self.util.activateBEAMplugin(dirPath)
             # Temporary fix for https://github.com/TIGER-NET/Processing-GPF/issues/1, until new version of BEAM is out.
             # When that happens also remove beam-meris-radiometry-5.0.1.jar from "BEAM additional modules"
@@ -221,7 +225,15 @@ class woisInstaller():
         # Set the amount of memory to be used with NEST GPT    
         if res == NEXT:
             dirPath = str(self.dialog.dirPathText.toPlainText())
-            self.util.modifyRamInBatFiles(os.path.join(dirPath,'gpt.bat'))
+            # 32 bit systems usually have less RAM so assign less to S1 Toolbox
+            if is32bit:
+                self.util.modifyRamInBatFiles(os.path.join(dirPath,'gpt.bat'), 0.4)
+            else:
+                self.util.modifyRamInBatFiles(os.path.join(dirPath,'gpt.bat'), 0.6)
+            # There is a bug in S1TBX 1.1.0 installer so the gpt file has to be 
+            # modified for 32 bit installation
+            if is32bit:
+                self.util.removeIncompatibleJavaOptions(os.path.join(dirPath, 'gpt.bat'))
             self.util.activateS1TBXplugin(dirPath)
         elif res == SKIP:
             pass
@@ -461,7 +473,7 @@ class Utilities(QtCore.QObject):
             self.finished.emit()
             return
         
-        # for directories copy the whole directory recursivelly
+        # for directories copy the whole directory recursively
         if os.path.isdir(srcPath):
             dir_util.copy_tree(srcPath, dstPath)
         # for files create destination directory is necessary and copy the file
@@ -482,7 +494,7 @@ class Utilities(QtCore.QObject):
             self.finished.emit()
             return
         
-        # checkWritePremissions alsoe creates the directory if it doesn't exist yet
+        # checkWritePremissions also creates the directory if it doesn't exist yet
         if not self.checkWritePermissions(dstPath):
             msgBox = QtGui.QMessageBox()
             msgBox.setText("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n"+
@@ -515,7 +527,7 @@ class Utilities(QtCore.QObject):
                 pass
             return True
                 
-    def modifyRamInBatFiles(self, batFilePath):
+    def modifyRamInBatFiles(self, batFilePath, useRamFraction):
         # Check how much RAM the system has. Only works in Windows
         if sys.platform != 'win32':
             msgBox = QtGui.QMessageBox()
@@ -525,7 +537,7 @@ class Utilities(QtCore.QObject):
         totalRam = self._ram()
         totalRam = totalRam / (1024*1024)
         
-        # Make sure the BEAM/NEST batch file exists in the given directory
+        # Make sure the BEAM/S1TBX batch file exists in the given directory
         if not os.path.isfile(batFilePath):
             msgBox = QtGui.QMessageBox()
             msgBox.setText("Could not find the batch file!\n\n The amount of RAM available to the program was not changed.")
@@ -539,7 +551,7 @@ class Utilities(QtCore.QObject):
         tempFile.close()
         with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
             for line in infile:
-                line = re.sub(r"-Xmx\d{4}M", "-Xmx"+str(int(totalRam*0.60))+"M", line)
+                line = re.sub(r"-Xmx\d{4}M", "-Xmx"+str(int(totalRam*useRamFraction))+"M", line)
                 outfile.write(line)
         tempDir = os.path.dirname(tempFilePath)
         if os.path.isfile(os.path.join(tempDir,"gpt.bat")):
@@ -547,6 +559,28 @@ class Utilities(QtCore.QObject):
         os.rename(tempFilePath, os.path.join(tempDir,"gpt.bat"))
         shutil.copy(os.path.join(tempDir,"gpt.bat"), batFilePath)
     
+    def removeIncompatibleJavaOptions(self, batFilePath):
+        # Make sure the S1TBX batch file exists in the given directory
+        if not os.path.isfile(batFilePath):
+            msgBox = QtGui.QMessageBox()
+            msgBox.setText("Could not find the batch file!\n\n Could not modify Java VM options.")
+            msgBox.exec_()
+            return
+        
+        # In the batch file remove the "-XX:+UseLoopPredicate" option which doesn't work with 32 bit installation. 
+        # First do this in a temp file and then copy the temp file to the correct dir
+        tempFile = NamedTemporaryFile(delete=False)
+        tempFilePath = tempFile.name
+        tempFile.close()
+        with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
+            for line in infile:
+                line = re.sub(r"-XX:\+UseLoopPredicate ", "", line)
+                outfile.write(line)
+        tempDir = os.path.dirname(tempFilePath)
+        if os.path.isfile(os.path.join(tempDir,"gpt.bat")):
+            os.remove(os.path.join(tempDir,"gpt.bat"))
+        os.rename(tempFilePath, os.path.join(tempDir,"gpt.bat"))
+        shutil.copy(os.path.join(tempDir,"gpt.bat"), batFilePath)
     
     def _ram(self):
         kernel32 = ctypes.windll.kernel32
