@@ -27,7 +27,7 @@
 """
 
 from PyQt4 import QtCore, QtGui
-from  installerGUI import  installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, s1tbxInstallWindow, s1tbxPostInstallWindow 
+from  installerGUI import  installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, snapInstallWindow, snapPostInstallWindow 
 from installerGUI import osgeo4wInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, finishWindow
 from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
@@ -75,7 +75,7 @@ class woisInstaller():
                 installationsDir = "Installations_x64"
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
                 beamInstall = os.path.join(installationsDir, "beam_5.0_win64_installer.exe")
-                s1tbxInstall = os.path.join(installationsDir, "s1tbx_1.1.0_win64_installer.exe")
+                snapInstall = os.path.join(installationsDir, "esa-snap_sentinel_windows-x64_3_0.exe")
                 rInstall = os.path.join(installationsDir, "R-3.1.3-win.exe")
                 postgreInstall = os.path.join(installationsDir, "postgresql-9.3.6-2-windows-x64.exe")
                 postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x64-setup-2.1.5-2.exe")
@@ -91,7 +91,7 @@ class woisInstaller():
                 rDefaultDir = "C:\\Program Files\\R\\R-3.1.3"
             else:
                 osgeo4wDefaultDir = "C:\\OSGeo4W64"
-                s1tbxDefaultDir = "C:\\Program Files\\S1TBX"
+                snapDefaultDir = "C:\\Program Files\\snap"
                 beamDefaultDir = "C:\\Program Files\\beam-5.0"
                 mapwindowDefaultDir = "C:\\Program Files (x86)\\MapWindow"
                 rDefaultDir = "C:\\Program Files\\R\\R-3.1.3"
@@ -200,14 +200,14 @@ class woisInstaller():
             self.unknownActionPopup() 
                  
         ########################################################################
-        # Install S1 Toolbox
+        # Install Snap Toolbox
          
-        self.dialog = s1tbxInstallWindow();
+        self.dialog = snapInstallWindow();
         res = self.showDialog()
          
-        # run the NEST installation here as an outside process    
+        # run the Snap installation here as an outside process    
         if res == NEXT:
-            self.util.execSubprocess(s1tbxInstall)
+            self.util.execSubprocess(snapInstall)
             #self.dialog =  s1tbxPostInstallWindow(s1tbxDefaultDir);
             #res = self.showDialog()
         elif res == SKIP:
@@ -219,22 +219,28 @@ class woisInstaller():
             self.unknownActionPopup()
         
         # ask for post-installation even if user has skipped installation
-        self.dialog =  s1tbxPostInstallWindow(s1tbxDefaultDir);
+        self.dialog =  snapPostInstallWindow(snapDefaultDir);
         res = self.showDialog()
              
         # Set the amount of memory to be used with NEST GPT    
         if res == NEXT:
             dirPath = str(self.dialog.dirPathText.toPlainText())
+            dstPath = os.path.join(os.path.expanduser("~"), ".snap")
+            srcPath = "SNAP additional modules"
+            self.util.copyFiles(srcPath, dstPath)
+            #self.dialog = copyingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
+            #self.showDialog()
+
             # 32 bit systems usually have less RAM so assign less to S1 Toolbox
             if is32bit:
                 self.util.modifyRamInBatFiles(os.path.join(dirPath,'gpt.bat'), 0.4)
             else:
-                self.util.modifyRamInBatFiles(os.path.join(dirPath,'gpt.bat'), 0.6)
+                self.util.modifyRamInBatFiles(os.path.join(dirPath,'bin','gpt.vmoptions'),0.6)
             # There is a bug in S1TBX 1.1.0 installer so the gpt file has to be 
             # modified for 32 bit installation
             if is32bit:
                 self.util.removeIncompatibleJavaOptions(os.path.join(dirPath, 'gpt.bat'))
-            self.util.activateS1TBXplugin(dirPath)
+            self.util.activateSNAPplugin(dirPath)
         elif res == SKIP:
             pass
         elif res == CANCEL:
@@ -537,27 +543,45 @@ class Utilities(QtCore.QObject):
         totalRam = self._ram()
         totalRam = totalRam / (1024*1024)
         
-        # Make sure the BEAM/S1TBX batch file exists in the given directory
+        # Make sure the BEAM/SNAP batch file exists in the given directory
         if not os.path.isfile(batFilePath):
             msgBox = QtGui.QMessageBox()
             msgBox.setText("Could not find the batch file!\n\n The amount of RAM available to the program was not changed.")
             msgBox.exec_()
             return
-        
-        # In the batch file replace the amount of RAM to be used by BEAM/NEST to 70% of system RAM, first in a temp file 
-        # and then copy the temp file to the correct dir
-        tempFile = NamedTemporaryFile(delete=False)
-        tempFilePath = tempFile.name
-        tempFile.close()
-        with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
-            for line in infile:
-                line = re.sub(r"-Xmx\d{4}M", "-Xmx"+str(int(totalRam*useRamFraction))+"M", line)
-                outfile.write(line)
-        tempDir = os.path.dirname(tempFilePath)
-        if os.path.isfile(os.path.join(tempDir,"gpt.bat")):
-            os.remove(os.path.join(tempDir,"gpt.bat"))
-        os.rename(tempFilePath, os.path.join(tempDir,"gpt.bat"))
-        shutil.copy(os.path.join(tempDir,"gpt.bat"), batFilePath)
+
+        if os.path.splitext(batFilePath)[1] == '.bat':
+            # Beam
+            # In the batch file replace the amount of RAM to be used by BEAM to 70% of system RAM, first in a temp file 
+            # and then copy the temp file to the correct dir
+            tempFile = NamedTemporaryFile(delete=False)
+            tempFilePath = tempFile.name
+            tempFile.close()
+            with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
+                for line in infile:
+                    line = re.sub(r"-Xmx\d{4}M", "-Xmx"+str(int(totalRam*useRamFraction))+"M", line)
+                    outfile.write(line)
+            tempDir = os.path.dirname(tempFilePath)
+            if os.path.isfile(os.path.join(tempDir,"gpt.bat")):
+                os.remove(os.path.join(tempDir,"gpt.bat"))
+            os.rename(tempFilePath, os.path.join(tempDir,"gpt.bat"))
+            shutil.copy(os.path.join(tempDir,"gpt.bat"), batFilePath)
+        elif os.path.splitext(batFilePath)[1] == '.vmoptions':
+            # Snap
+            # In the vmoptions file replace the amount of RAM to be used by BEAM to 70% of system RAM, first in a temp file 
+            # and then copy the temp file to the correct dir
+            tempFile = NamedTemporaryFile(delete=False)
+            tempFilePath = tempFile.name
+            tempFile.close()
+            with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
+                for line in infile:
+                    line = re.sub(r"# -Xmx\d{3}m", "-Xmx"+str(int(totalRam*useRamFraction))+"m", line)
+                    outfile.write(line)
+            tempDir = os.path.dirname(tempFilePath)
+            if os.path.isfile(os.path.join(tempDir,"gpt.vmoptions")):
+                os.remove(os.path.join(tempDir,"gpt.vmoptions"))
+            os.rename(tempFilePath, os.path.join(tempDir,"gpt.vmoptions"))
+            shutil.copy(os.path.join(tempDir,"gpt.vmoptions"), batFilePath)            
     
     def removeIncompatibleJavaOptions(self, batFilePath):
         # Make sure the S1TBX batch file exists in the given directory
@@ -644,10 +668,10 @@ class Utilities(QtCore.QObject):
         self.setQGISSettings("Processing/configuration/ACTIVATE_BEAM", "true")
         self.setQGISSettings("Processing/configuration/BEAM_FOLDER", dirPath)
         
-    def activateS1TBXplugin(self, dirPath):
+    def activateSNAPplugin(self, dirPath):
         self.setQGISSettings("PythonPlugins/processing_gpf", "true")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_S1TBX", "true")
-        self.setQGISSettings("Processing/configuration/S1TBX_FOLDER", dirPath)
+        self.setQGISSettings("Processing/configuration/ACTIVATE_SNAP", "true")
+        self.setQGISSettings("Processing/configuration/SNAP_FOLDER", dirPath)
         
     def activateRplugin(self, dirPath, use64):
         self.setQGISSettings("Processing/configuration/ACTIVATE_R", "true")

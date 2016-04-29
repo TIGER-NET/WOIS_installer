@@ -184,30 +184,30 @@ class beamPostInstallWindow(postInstallWindow):
         self.dirPathText.setPlainText(_translate("MainWindow", self.defaultPath, None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install BEAM", None))
 
-# NEST        
-class s1tbxInstallWindow(installWindow):
+# SNAP
+class snapInstallWindow(installWindow):
     def __init__(self):
         installWindow.__init__(self)
-        self.componentLogoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/s1tbxLogo.png")))
+        self.componentLogoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/snapLogo.png")))
         
     def retranslateUi(self, MainWindow):
-        super(s1tbxInstallWindow, self).retranslateUi(MainWindow)
-        self.topLabel.setText(_translate("MainWindow", "Sentinel-1 Toolbox is a software for analyzing radar data derived with satellites operated by European Space Agency (ESA) and other organisation.", None))
-        self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the S-1 Toolbox installer will start. In the installer you will be asked to accept the S-1 Toolbox license conditions followed by a couple of installation questions. In all the questions you can keep the default answers by clicking \"Next >\" until the installation starts.", None))
-        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install Sentinel-1 Toolbox", None))   
+        super(snapInstallWindow, self).retranslateUi(MainWindow)
+        self.topLabel.setText(_translate("MainWindow", "Snap Toolbox is a software for analyzing data derived with satellites operated by European Space Agency (ESA) and other organisation.", None))
+        self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the Snap Toolbox installer will start. In the installer you will be asked to accept the Snap Toolbox license conditions followed by a couple of installation questions. In all the questions you can keep the default answers by clicking \"Next >\" until the installation starts.", None))
+        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install Snap Toolbox", None))   
         
-class s1tbxPostInstallWindow(postInstallWindow):
+class snapPostInstallWindow(postInstallWindow):
     def __init__(self, defaultPath):
         self.defaultPath = defaultPath
         postInstallWindow.__init__(self)
-        self.componentLogoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/s1tbxLogo.png")))
+        self.componentLogoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/snapLogo.png")))
         
     def retranslateUi(self, MainWindow):
-        super(s1tbxPostInstallWindow, self).retranslateUi(MainWindow)
-        self.topLabel.setText(_translate("MainWindow", "Sentinel-1 Toolbox is a software for analyzing radar data derived with satellites operated by European Space Agency (ESA) and other organisation.", None))
-        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for S-1 Toolbox (activating plugins, copying extra libraries, etc.). If you changed the S-1 Toolbox installation directory during the previous step (or skipped the step), make sure that you check the path to the directory below and update it if necessary.", None))
+        super(snapPostInstallWindow, self).retranslateUi(MainWindow)
+        self.topLabel.setText(_translate("MainWindow", "Snap Toolbox is a software for analyzing data derived with satellites operated by European Space Agency (ESA) and other organisation.", None))
+        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for Snap Toolbox (activating plugins, copying extra libraries, etc.). If you changed the Snap Toolbox installation directory during the previous step (or skipped the step), make sure that you check the path to the directory below and update it if necessary.", None))
         self.dirPathText.setPlainText(_translate("MainWindow", self.defaultPath, None))
-        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install Sentinel-1 Toolbox", None))
+        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install Snap Toolbox", None))
                 
 # R
 class rInstallWindow(installWindow):
