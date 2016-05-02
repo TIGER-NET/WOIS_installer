@@ -37,7 +37,6 @@ import os
 import errno
 import shutil
 import subprocess
-import _winreg
 import ctypes
 from ctypes import wintypes
 import re
