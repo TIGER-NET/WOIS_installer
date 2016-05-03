@@ -62,7 +62,7 @@ class woisInstaller():
                 installationsDir = "Installations_x32"
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
                 beamInstall = os.path.join(installationsDir, "beam_5.0_win32_installer.exe")
-                s1tbxInstall = os.path.join(installationsDir, "s1tbx_1.1.0_win32_installer.exe")
+                snapInstall = os.path.join(installationsDir, "esa-snap_sentinel_windows-x32_3_0.exe")
                 rInstall = os.path.join(installationsDir, "R-3.1.3-win.exe")
                 postgreInstall = os.path.join(installationsDir, "postgresql-9.3.6-2-windows.exe")
                 postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x32-setup-2.1.5-1.exe")
@@ -84,7 +84,7 @@ class woisInstaller():
             # select default installation directories for 32 or 64 bit install
             if is32bit:
                 osgeo4wDefaultDir = "C:\\OSGeo4W"
-                s1tbxDefaultDir = "C:\\Program Files\\S1TBX"
+                snapDefaultDir = "C:\\Program Files\\S1TBX"
                 beamDefaultDir = "C:\\Program Files\\beam-5.0"
                 mapwindowDefaultDir = "C:\\Program Files\\MapWindow"
                 rDefaultDir = "C:\\Program Files\\R\\R-3.1.3"
@@ -181,10 +181,8 @@ class woisInstaller():
             self.dialog = copyingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
             self.showDialog()
             # 32 bit systems usually have less RAM so assign less to BEAM
-            if is32bit:
-                self.util.modifyRamInBatFiles(os.path.join(dirPath,"bin",'gpt.bat'), 0.4)
-            else:
-                self.util.modifyRamInBatFiles(os.path.join(dirPath,"bin",'gpt.bat'), 0.6)
+            ram_fraction = 0.4 if is32bit else 0.6
+            self.util.modifyRamInBatFiles(os.path.join(dirPath,"bin",'gpt.bat'), ram_fraction)
             self.util.activateBEAMplugin(dirPath)
             # Temporary fix for https://github.com/TIGER-NET/Processing-GPF/issues/1, until new version of BEAM is out.
             # When that happens also remove beam-meris-radiometry-5.0.1.jar from "BEAM additional modules"
@@ -207,7 +205,7 @@ class woisInstaller():
         # run the Snap installation here as an outside process    
         if res == NEXT:
             self.util.execSubprocess(snapInstall)
-            #self.dialog =  s1tbxPostInstallWindow(s1tbxDefaultDir);
+            #self.dialog =  snapPostInstallWindow(snapDefaultDir);
             #res = self.showDialog()
         elif res == SKIP:
             pass
@@ -231,14 +229,12 @@ class woisInstaller():
             #self.showDialog()
 
             # 32 bit systems usually have less RAM so assign less to S1 Toolbox
-            if is32bit:
-                self.util.modifyRamInBatFiles(os.path.join(dirPath,'gpt.bat'), 0.4)
-            else:
-                self.util.modifyRamInBatFiles(os.path.join(dirPath,'bin','gpt.vmoptions'),0.6)
+            ram_fraction = 0.4 if is32bit else 0.6
+            self.util.modifyRamInBatFiles(os.path.join(dirPath, 'bin', 'gpt.vmoptions'), ram_fraction)
             # There is a bug in S1TBX 1.1.0 installer so the gpt file has to be 
             # modified for 32 bit installation
             if is32bit:
-                self.util.removeIncompatibleJavaOptions(os.path.join(dirPath, 'gpt.bat'))
+                self.util.removeIncompatibleJavaOptions(os.path.join(dirPath, 'bin', 'gpt.vmoptions'))
             self.util.activateSNAPplugin(dirPath)
         elif res == SKIP:
             pass
