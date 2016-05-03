@@ -686,6 +686,8 @@ if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
     installer = woisInstaller()
     # Fix to make sure that runInstaller is executed in the app event loop
-    QtCore.QTimer.singleShot(200, QtCore.SLOT(installer.runInstaller()));
+    def _slot_installer():
+        QtCore.SLOT(installer.runInstaller())
+    QtCore.QTimer.singleShot(200, _slot_installer)
     app.exec_()
 
