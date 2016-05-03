@@ -533,6 +533,18 @@ class Utilities(QtCore.QObject):
             return True
                 
     def modifyRamInBatFiles(self, batFilePath, useRamFraction):
+        """
+        # Snap
+        # In the vmoptions file replace the amount of RAM to be used by BEAM 
+        # to 70% of system RAM, first in a temp file 
+        # and then copy the temp file to the correct dir
+
+        # Beam
+        # In the batch file replace the amount of RAM to be used by BEAM 
+        # to 70% of system RAM, first in a temp file 
+        # and then copy the temp file to the correct dir
+        """
+
         # Check how much RAM the system has. Only works in Windows
         if sys.platform != 'win32':
             msgBox = QtGui.QMessageBox()
@@ -549,38 +561,17 @@ class Utilities(QtCore.QObject):
             msgBox.exec_()
             return
 
-        if os.path.splitext(batFilePath)[1] == '.bat':
-            # Beam
-            # In the batch file replace the amount of RAM to be used by BEAM to 70% of system RAM, first in a temp file 
-            # and then copy the temp file to the correct dir
-            tempFile = NamedTemporaryFile(delete=False)
-            tempFilePath = tempFile.name
-            tempFile.close()
-            with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
-                for line in infile:
-                    line = re.sub(r"-Xmx\d{4}M", "-Xmx"+str(int(totalRam*useRamFraction))+"M", line)
-                    outfile.write(line)
-            tempDir = os.path.dirname(tempFilePath)
-            if os.path.isfile(os.path.join(tempDir,"gpt.bat")):
-                os.remove(os.path.join(tempDir,"gpt.bat"))
-            os.rename(tempFilePath, os.path.join(tempDir,"gpt.bat"))
-            shutil.copy(os.path.join(tempDir,"gpt.bat"), batFilePath)
-        elif os.path.splitext(batFilePath)[1] == '.vmoptions':
-            # Snap
-            # In the vmoptions file replace the amount of RAM to be used by BEAM to 70% of system RAM, first in a temp file 
-            # and then copy the temp file to the correct dir
-            tempFile = NamedTemporaryFile(delete=False)
-            tempFilePath = tempFile.name
-            tempFile.close()
-            with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
-                for line in infile:
-                    line = re.sub(r"# -Xmx\d{3}m", "-Xmx"+str(int(totalRam*useRamFraction))+"m", line)
-                    outfile.write(line)
-            tempDir = os.path.dirname(tempFilePath)
-            if os.path.isfile(os.path.join(tempDir,"gpt.vmoptions")):
-                os.remove(os.path.join(tempDir,"gpt.vmoptions"))
-            os.rename(tempFilePath, os.path.join(tempDir,"gpt.vmoptions"))
-            shutil.copy(os.path.join(tempDir,"gpt.vmoptions"), batFilePath)            
+        ramflag = "-Xmx{:.0d}M".format(totalRam*useRamFraction)
+        flag_set = False
+        with NamedTemporaryFile() as outfile, open(batFilePath, 'r') as infile:
+            for line in infile:
+                if "-Xmx" in line:
+                    line = re.sub(r"(#?)(.*?)(-Xmx)(\d+)(M|m)", ramflag, line)
+                    flag_set = True
+                outfile.write(line)
+            if not flag_set:
+                outfile.write(ramflag + "\n")
+            shutil.copy(outfile.name, batFilePath)
     
     def removeIncompatibleJavaOptions(self, batFilePath):
         # Make sure the S1TBX batch file exists in the given directory
