@@ -84,7 +84,7 @@ class woisInstaller():
             # select default installation directories for 32 or 64 bit install
             if is32bit:
                 osgeo4wDefaultDir = "C:\\OSGeo4W"
-                snapDefaultDir = "C:\\Program Files\\S1TBX"
+                snapDefaultDir = "C:\\Program Files\\snap"
                 beamDefaultDir = "C:\\Program Files\\beam-5.0"
                 mapwindowDefaultDir = "C:\\Program Files\\MapWindow"
                 rDefaultDir = "C:\\Program Files\\R\\R-3.1.3"
@@ -231,7 +231,7 @@ class woisInstaller():
             # 32 bit systems usually have less RAM so assign less to S1 Toolbox
             ram_fraction = 0.4 if is32bit else 0.6
             self.util.modifyRamInBatFiles(os.path.join(dirPath, 'bin', 'gpt.vmoptions'), ram_fraction)
-            # There is a bug in S1TBX 1.1.0 installer so the gpt file has to be
+            # There is a bug in snap installer so the gpt file has to be
             # modified for 32 bit installation
             if is32bit:
                 self.util.removeIncompatibleJavaOptions(os.path.join(dirPath, 'bin', 'gpt.vmoptions'))
@@ -579,7 +579,7 @@ class Utilities(QtCore.QObject):
             shutil.copy(os.path.join(tempDir,"gpt.vmoptions"), batFilePath)
 
     def removeIncompatibleJavaOptions(self, batFilePath):
-        # Make sure the S1TBX batch file exists in the given directory
+        # Make sure the snap batch file exists in the given directory
         if not os.path.isfile(batFilePath):
             msgBox = QtGui.QMessageBox()
             msgBox.setText("Could not find the batch file!\n\n Could not modify Java VM options.")
