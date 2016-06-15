@@ -181,9 +181,10 @@ class woisInstaller():
             self.dialog = copyingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
             self.showDialog()
             # 32 bit systems usually have less RAM so assign less to BEAM
-            ram_fraction = 0.4 if is32bit else 0.6
-            self.util.modifyRamInBatFiles(os.path.join(dirPath,"bin",'gpt.bat'), ram_fraction)
+            #ram_fraction = 0.4 if is32bit else 0.6
+            #self.util.modifyRamInBatFiles(os.path.join(dirPath,"bin",'gpt.bat'), ram_fraction)
             self.util.activateBEAMplugin(dirPath)
+
             # Temporary fix for https://github.com/TIGER-NET/Processing-GPF/issues/1, until new version of BEAM is out.
             # When that happens also remove beam-meris-radiometry-5.0.1.jar from "BEAM additional modules"
             #self.util.deleteFile(os.path.join(dstPath, "beam-meris-radiometry-5.0.jar"))
@@ -229,8 +230,9 @@ class woisInstaller():
             #self.showDialog()
 
             # 32 bit systems usually have less RAM so assign less to S1 Toolbox
-            ram_fraction = 0.4 if is32bit else 0.6
-            self.util.modifyRamInBatFiles(os.path.join(dirPath, 'bin', 'gpt.vmoptions'), ram_fraction)
+            #ram_fraction = 0.4 if is32bit else 0.6
+            #self.util.modifyRamInBatFiles(os.path.join(dirPath, 'bin', 'gpt.vmoptions'), ram_fraction)
+
             # There is a bug in snap installer so the gpt file has to be
             # modified for 32 bit installation
             if is32bit:
