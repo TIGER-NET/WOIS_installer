@@ -27,7 +27,7 @@
 """
 
 from PyQt4 import QtCore, QtGui
-from  installerGUI import  installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, snapInstallWindow, snapPostInstallWindow
+from installerGUI import installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, snapInstallWindow, snapPostInstallWindow
 from installerGUI import osgeo4wInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, finishWindow
 from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
@@ -216,7 +216,7 @@ class woisInstaller():
             self.unknownActionPopup()
 
         # ask for post-installation even if user has skipped installation
-        self.dialog =  snapPostInstallWindow(snapDefaultDir);
+        self.dialog = snapPostInstallWindow(snapDefaultDir)
         res = self.showDialog()
 
         # Set the amount of memory to be used with NEST GPT
