@@ -27,7 +27,7 @@
 """
 
 from PyQt4 import QtCore, QtGui
-from  installerGUI import  installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, snapInstallWindow, snapPostInstallWindow
+from installerGUI import installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, snapInstallWindow, snapPostInstallWindow
 from installerGUI import osgeo4wInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, finishWindow
 from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
@@ -37,10 +37,6 @@ import os
 import errno
 import shutil
 import subprocess
-import ctypes
-from ctypes import wintypes
-import re
-from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
 from distutils import dir_util
 
@@ -180,10 +176,8 @@ class woisInstaller():
             srcPath = "BEAM additional modules"
             self.dialog = copyingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
             self.showDialog()
-            # 32 bit systems usually have less RAM so assign less to BEAM
-            ram_fraction = 0.4 if is32bit else 0.6
-            self.util.modifyRamInBatFiles(os.path.join(dirPath,"bin",'gpt.bat'), ram_fraction)
             self.util.activateBEAMplugin(dirPath)
+
             # Temporary fix for https://github.com/TIGER-NET/Processing-GPF/issues/1, until new version of BEAM is out.
             # When that happens also remove beam-meris-radiometry-5.0.1.jar from "BEAM additional modules"
             #self.util.deleteFile(os.path.join(dstPath, "beam-meris-radiometry-5.0.jar"))
@@ -216,7 +210,7 @@ class woisInstaller():
             self.unknownActionPopup()
 
         # ask for post-installation even if user has skipped installation
-        self.dialog =  snapPostInstallWindow(snapDefaultDir);
+        self.dialog = snapPostInstallWindow(snapDefaultDir)
         res = self.showDialog()
 
         # Set the amount of memory to be used with NEST GPT
@@ -227,14 +221,6 @@ class woisInstaller():
             self.util.copyFiles(srcPath, dstPath)
             #self.dialog = copyingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
             #self.showDialog()
-
-            # 32 bit systems usually have less RAM so assign less to S1 Toolbox
-            ram_fraction = 0.4 if is32bit else 0.6
-            self.util.modifyRamInBatFiles(os.path.join(dirPath, 'bin', 'gpt.vmoptions'), ram_fraction)
-            # There is a bug in snap installer so the gpt file has to be
-            # modified for 32 bit installation
-            if is32bit:
-                self.util.removeIncompatibleJavaOptions(os.path.join(dirPath, 'bin', 'gpt.vmoptions'))
             self.util.activateSNAPplugin(dirPath)
         elif res == SKIP:
             pass
@@ -527,100 +513,6 @@ class Utilities(QtCore.QObject):
             except:
                 pass
             return True
-
-    def modifyRamInBatFiles(self, batFilePath, useRamFraction):
-        # Check how much RAM the system has. Only works in Windows
-        if sys.platform != 'win32':
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("This installer is only meant for Windows!\n\n The installed WOIS might not work properly.")
-            msgBox.exec_()
-            return
-        totalRam = self._ram()
-        totalRam = totalRam / (1024*1024)
-
-        # Make sure the BEAM/SNAP batch file exists in the given directory
-        if not os.path.isfile(batFilePath):
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("Could not find the batch file!\n\n The amount of RAM available to the program was not changed.")
-            msgBox.exec_()
-            return
-
-        if os.path.splitext(batFilePath)[1] == '.bat':
-            # Beam
-            # In the batch file replace the amount of RAM to be used by BEAM to 70% of system RAM, first in a temp file
-            # and then copy the temp file to the correct dir
-            tempFile = NamedTemporaryFile(delete=False)
-            tempFilePath = tempFile.name
-            tempFile.close()
-            with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
-                for line in infile:
-                    line = re.sub(r"-Xmx\d{4}M", "-Xmx"+str(int(totalRam*useRamFraction))+"M", line)
-                    outfile.write(line)
-            tempDir = os.path.dirname(tempFilePath)
-            if os.path.isfile(os.path.join(tempDir,"gpt.bat")):
-                os.remove(os.path.join(tempDir,"gpt.bat"))
-            os.rename(tempFilePath, os.path.join(tempDir,"gpt.bat"))
-            shutil.copy(os.path.join(tempDir,"gpt.bat"), batFilePath)
-        elif os.path.splitext(batFilePath)[1] == '.vmoptions':
-            # Snap
-            # In the vmoptions file replace the amount of RAM to be used by BEAM to 70% of system RAM, first in a temp file
-            # and then copy the temp file to the correct dir
-            tempFile = NamedTemporaryFile(delete=False)
-            tempFilePath = tempFile.name
-            tempFile.close()
-            with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
-                for line in infile:
-                    line = re.sub(r"# -Xmx\d{3}m", "-Xmx"+str(int(totalRam*useRamFraction))+"m", line)
-                    outfile.write(line)
-            tempDir = os.path.dirname(tempFilePath)
-            if os.path.isfile(os.path.join(tempDir,"gpt.vmoptions")):
-                os.remove(os.path.join(tempDir,"gpt.vmoptions"))
-            os.rename(tempFilePath, os.path.join(tempDir,"gpt.vmoptions"))
-            shutil.copy(os.path.join(tempDir,"gpt.vmoptions"), batFilePath)
-
-    def removeIncompatibleJavaOptions(self, batFilePath):
-        # Make sure the snap batch file exists in the given directory
-        if not os.path.isfile(batFilePath):
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("Could not find the batch file!\n\n Could not modify Java VM options.")
-            msgBox.exec_()
-            return
-
-        # In the batch file remove the "-XX:+UseLoopPredicate" option which doesn't work with 32 bit installation.
-        # First do this in a temp file and then copy the temp file to the correct dir
-        tempFile = NamedTemporaryFile(delete=False)
-        tempFilePath = tempFile.name
-        tempFile.close()
-        with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
-            for line in infile:
-                line = re.sub(r"-XX:\+UseLoopPredicate ", "", line)
-                outfile.write(line)
-        tempDir = os.path.dirname(tempFilePath)
-        if os.path.isfile(os.path.join(tempDir,"gpt.bat")):
-            os.remove(os.path.join(tempDir,"gpt.bat"))
-        os.rename(tempFilePath, os.path.join(tempDir,"gpt.bat"))
-        shutil.copy(os.path.join(tempDir,"gpt.bat"), batFilePath)
-
-    def _ram(self):
-        kernel32 = ctypes.windll.kernel32
-        c_ulonglong = ctypes.c_ulonglong
-        class MEMORYSTATUSEX(ctypes.Structure):
-            _fields_ = [
-                ('dwLength', wintypes.DWORD),
-                ('dwMemoryLoad', wintypes.DWORD),
-                ('ullTotalPhys', c_ulonglong),
-                ('ullAvailPhys', c_ulonglong),
-                ('ullTotalPageFile', c_ulonglong),
-                ('ullAvailPageFile', c_ulonglong),
-                ('ullTotalVirtual', c_ulonglong),
-                ('ullAvailVirtual', c_ulonglong),
-                ('ullExtendedVirtual', c_ulonglong),
-            ]
-
-        memoryStatus = MEMORYSTATUSEX()
-        memoryStatus.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
-        kernel32.GlobalMemoryStatusEx(ctypes.byref(memoryStatus))
-        return (memoryStatus.ullTotalPhys)
 
     def setQGISSettings(self, name, value):
         self.qsettings.setValue(name, value)
