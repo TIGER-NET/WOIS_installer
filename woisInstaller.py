@@ -37,10 +37,6 @@ import os
 import errno
 import shutil
 import subprocess
-import ctypes
-from ctypes import wintypes
-import re
-from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
 from distutils import dir_util
 
@@ -225,11 +221,6 @@ class woisInstaller():
             self.util.copyFiles(srcPath, dstPath)
             #self.dialog = copyingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
             #self.showDialog()
-
-            # There is a bug in snap installer so the gpt file has to be
-            # modified for 32 bit installation
-            if is32bit:
-                self.util.removeIncompatibleJavaOptions(os.path.join(dirPath, 'bin', 'gpt.vmoptions'))
             self.util.activateSNAPplugin(dirPath)
         elif res == SKIP:
             pass
@@ -522,29 +513,6 @@ class Utilities(QtCore.QObject):
             except:
                 pass
             return True
-
-    def removeIncompatibleJavaOptions(self, batFilePath):
-        # Make sure the snap batch file exists in the given directory
-        if not os.path.isfile(batFilePath):
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("Could not find the batch file!\n\n Could not modify Java VM options.")
-            msgBox.exec_()
-            return
-
-        # In the batch file remove the "-XX:+UseLoopPredicate" option which doesn't work with 32 bit installation.
-        # First do this in a temp file and then copy the temp file to the correct dir
-        tempFile = NamedTemporaryFile(delete=False)
-        tempFilePath = tempFile.name
-        tempFile.close()
-        with open(tempFilePath, 'w') as outfile, open(batFilePath, 'r') as infile:
-            for line in infile:
-                line = re.sub(r"-XX:\+UseLoopPredicate ", "", line)
-                outfile.write(line)
-        tempDir = os.path.dirname(tempFilePath)
-        if os.path.isfile(os.path.join(tempDir,"gpt.bat")):
-            os.remove(os.path.join(tempDir,"gpt.bat"))
-        os.rename(tempFilePath, os.path.join(tempDir,"gpt.bat"))
-        shutil.copy(os.path.join(tempDir,"gpt.bat"), batFilePath)
 
     def setQGISSettings(self, name, value):
         self.qsettings.setValue(name, value)
