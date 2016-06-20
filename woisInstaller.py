@@ -690,6 +690,11 @@ class Utilities(QtCore.QObject):
 
 if __name__ == '__main__':
 
+    # make sure this script is run as admin
+    import run_as_admin
+    if not run_as_admin.isUserAdmin():
+        run_as_admin.runAsAdmin()
+
     app = QtGui.QApplication(sys.argv)
 
     installer = woisInstaller()
