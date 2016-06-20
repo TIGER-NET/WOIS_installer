@@ -37,12 +37,12 @@ import os
 import errno
 import shutil
 import subprocess
-import ctypes
-from ctypes import wintypes
 import re
 from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
 from distutils import dir_util
+
+import installer_utils
 
 class woisInstaller():
 
@@ -182,7 +182,7 @@ class woisInstaller():
             self.showDialog()
             # 32 bit systems usually have less RAM so assign less to BEAM
             ram_fraction = 0.4 if is32bit else 0.6
-            self.util.modifyRamInBatFiles(os.path.join(dirPath, "bin", 'gpt.bat'), ram_fraction)
+            installer_utils.modifyRamInBatFiles(os.path.join(dirPath, "bin", 'gpt.bat'), ram_fraction)
             self.util.activateBEAMplugin(dirPath)
             # Temporary fix for https://github.com/TIGER-NET/Processing-GPF/issues/1, until new version of BEAM is out.
             # When that happens also remove beam-meris-radiometry-5.0.1.jar from "BEAM additional modules"
@@ -231,7 +231,7 @@ class woisInstaller():
             # 32 bit systems usually have less RAM so assign less to S1 Toolbox
             ram_fraction = 0.4 if is32bit else 0.6
             settingsfile = os.path.join(dirPath, 'bin', 'gpt.vmoptions')
-            self.util.modifyRamInBatFiles(settingsfile, ram_fraction)
+            installer_utils.modifyRamInBatFiles(settingsfile, ram_fraction)
             # There is a bug in snap installer so the gpt file has to be
             # modified for 32 bit installation
             if is32bit:
@@ -409,8 +409,8 @@ class woisInstaller():
         msgBox.exec_()
 
 
-    ##########################################
-    # helper functions
+##########################################
+# helper functions
 
 class Utilities(QtCore.QObject):
     finished = QtCore.pyqtSignal()
@@ -529,65 +529,6 @@ class Utilities(QtCore.QObject):
                 pass
             return True
 
-    def modifyRamInBatFiles(self, batFilePath, useRamFraction):
-        # Check how much RAM the system has. Only works in Windows
-        if sys.platform != 'win32':
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("This installer is only meant for Windows!\n\n The installed WOIS might not work properly.")
-            msgBox.exec_()
-            return
-        totalRam = self._ram()
-        totalRam = totalRam / (1024*1024)
-
-        # Make sure the BEAM/SNAP batch file exists in the given directory
-        if not os.path.isfile(batFilePath):
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("Could not find the batch file!\n\n The amount of RAM available to the program was not changed.")
-            msgBox.exec_()
-            return
-
-        if batFilePath.endswith('.bat'):
-            # Beam
-            # In the batch file replace the amount of RAM to be used
-            # by BEAM to some % of system RAM, first in a temp file
-            # and then copy the temp file to the correct dir
-            ram_flag = "-Xmx"+str(int(totalRam*useRamFraction))+"M"
-            with NamedTemporaryFile(delete=True) as outfile:
-                with open(batFilePath, 'r') as infile:
-                    for line in infile:
-                        line = re.sub(r"-Xmx\d+[Mm]", ram_flag, line)
-                        outfile.write(line)
-
-                # replace bat file
-                try:
-                    os.rename(batFilePath + '.backup')
-                except WindowsError:
-                    os.remove(batFilePath)
-                shutil.copy(outfile.name, batFilePath)
-
-        elif batFilePath.endswith('.vmoptions'):
-            # Snap
-            # In the vmoptions file replace the amount of RAM to be used
-            # by SNAP to some % of system RAM, first in a temp file
-            # and then copy the temp file to the correct dir
-            ram_flag = "-Xmx"+str(int(totalRam*useRamFraction))+"m"
-            with NamedTemporaryFile(delete=True) as outfile:
-                with open(batFilePath, 'r') as infile:
-                    for line in infile:
-                        if '-Xmx' in line:
-                            # omit old -Xmx flags
-                            continue
-                        outfile.write(line)
-                    # append ram flag
-                    outfile.write(ram_flag)
-
-                # replace bat file
-                try:
-                    os.rename(batFilePath + '.backup')
-                except WindowsError:
-                    os.remove(batFilePath)
-                shutil.copy(outfile.name, batFilePath)
-
     def removeIncompatibleJavaOptions(self, batFilePath):
         # Make sure the snap batch file exists in the given directory
         if not os.path.isfile(batFilePath):
@@ -610,27 +551,6 @@ class Utilities(QtCore.QObject):
             os.remove(os.path.join(tempDir,"gpt.bat"))
         os.rename(tempFilePath, os.path.join(tempDir,"gpt.bat"))
         shutil.copy(os.path.join(tempDir,"gpt.bat"), batFilePath)
-
-    def _ram(self):
-        kernel32 = ctypes.windll.kernel32
-        c_ulonglong = ctypes.c_ulonglong
-        class MEMORYSTATUSEX(ctypes.Structure):
-            _fields_ = [
-                ('dwLength', wintypes.DWORD),
-                ('dwMemoryLoad', wintypes.DWORD),
-                ('ullTotalPhys', c_ulonglong),
-                ('ullAvailPhys', c_ulonglong),
-                ('ullTotalPageFile', c_ulonglong),
-                ('ullAvailPageFile', c_ulonglong),
-                ('ullTotalVirtual', c_ulonglong),
-                ('ullAvailVirtual', c_ulonglong),
-                ('ullExtendedVirtual', c_ulonglong),
-            ]
-
-        memoryStatus = MEMORYSTATUSEX()
-        memoryStatus.dwLength = ctypes.sizeof(MEMORYSTATUSEX)
-        kernel32.GlobalMemoryStatusEx(ctypes.byref(memoryStatus))
-        return (memoryStatus.ullTotalPhys)
 
     def setQGISSettings(self, name, value):
         self.qsettings.setValue(name, value)
@@ -689,11 +609,15 @@ class Utilities(QtCore.QObject):
         self.setQGISSettings("Processing/configuration/MAPWINDOW_FOLDER", dirPath)
 
 if __name__ == '__main__':
+
     app = QtGui.QApplication(sys.argv)
+
     installer = woisInstaller()
+
     # Fix to make sure that runInstaller is executed in the app event loop
     def _slot_installer():
         QtCore.SLOT(installer.runInstaller())
-    QtCore.QTimer.singleShot(200, _slot_installer)
-    app.exec_()
 
+    QtCore.QTimer.singleShot(200, _slot_installer)
+
+    app.exec_()
