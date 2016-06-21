@@ -596,6 +596,8 @@ class Utilities(QtCore.QObject):
     def activateSNAPplugin(self, dirPath):
         self.setQGISSettings("PythonPlugins/processing_gpf", "true")
         self.setQGISSettings("Processing/configuration/ACTIVATE_SNAP", "true")
+        self.setQGISSettings("Processing/configuration/S1TBX_ACTIVATE", "true")
+        self.setQGISSettings("Processing/configuration/S2TBX_ACTIVATE", "true")
         self.setQGISSettings("Processing/configuration/SNAP_FOLDER", dirPath)
 
     def activateRplugin(self, dirPath, use64):
