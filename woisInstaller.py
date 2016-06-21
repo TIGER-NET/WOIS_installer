@@ -28,7 +28,7 @@
 
 from PyQt4 import QtCore, QtGui
 from installerGUI import installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, snapInstallWindow, snapPostInstallWindow
-from installerGUI import osgeo4wInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
+from installerGUI import osgeo4wInstallWindow, osgeo4wPostInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, finishWindow
 from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
 from installerGUI import CANCEL,SKIP,NEXT
@@ -118,6 +118,20 @@ class woisInstaller():
         # run the OSGeo4W installation here as an outside process
         if res == NEXT:
             self.util.execSubprocess(osgeo4wInstall)
+        elif res == SKIP:
+            pass
+        elif res == CANCEL:
+            del self.dialog
+            return
+        else:
+            self.unknownActionPopup()
+
+        # ask for post-installation even if user has skipped installation
+        self.dialog = osgeo4wPostInstallWindow()
+        res = self.showDialog()
+
+        # copy plugins, scripts, and models and activate processing providers
+        if res == NEXT:
             # copy the plugins
             dstPath = os.path.join(os.path.expanduser("~"),".qgis2","python")
             srcPath = os.path.join("QGIS WOIS plugins", "plugins.zip")
