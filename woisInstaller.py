@@ -122,21 +122,27 @@ class woisInstaller():
             dstPath = os.path.join(os.path.expanduser("~"),".qgis2","python")
             srcPath = os.path.join("QGIS WOIS plugins", "plugins.zip")
             # try to delete old plugins before copying the new ones to avoid conflicts
-            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'processing'))
-            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'processing_gpf'))
-            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'photo2shape'))
-            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'processing_workflow'))
-            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'processing_SWAT'))
-            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'openlayers_plugin'))
-            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'pointsamplingtool'))
-            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'temporalprofiletool'))
-            self.util.deleteDir(os.path.join(dstPath, 'plugins', 'valuetool'))
-            self.dialog = extractingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
+            plugins_to_delete = [
+                'processing',
+                'processing_gpf',
+                'photo2shape',
+                'processing_workflow',
+                'processing_SWAT',
+                'openlayers_plugin',
+                'pointsamplingtool',
+                'temporalprofiletool',
+                'valuetool']
+            for plugin in plugins_to_delete:
+                self.util.deleteDir(
+                        os.path.join(dstPath, 'plugins', plugin))
+            # show dialog because it might take some time on slower computers
+            self.dialog = extractingWaitWindow(self.util, srcPath, dstPath)
             self.showDialog()
             # copy scripts and models
             dstPath = os.path.join(os.path.expanduser("~"),".qgis2","processing")
             srcPath = os.path.join("QGIS WOIS plugins", "scripts_and_models.zip")
-            self.dialog = extractingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
+            # show dialog because it might take some time on slower computers
+            self.dialog = extractingWaitWindow(self.util, srcPath, dstPath)
             self.showDialog()
             # activate plugins and processing providers
             self.util.activatePlugins()
@@ -153,7 +159,7 @@ class woisInstaller():
         ########################################################################
         # Install BEAM
 
-        self.dialog = beamInstallWindow();
+        self.dialog = beamInstallWindow()
         res = self.showDialog()
 
         # run the BEAM installation here as an outside process
@@ -170,7 +176,7 @@ class woisInstaller():
             self.unknownActionPopup()
 
         # ask for post-installation even if user has skipped installation
-        self.dialog =  beamPostInstallWindow(beamDefaultDir);
+        self.dialog = beamPostInstallWindow(beamDefaultDir);
         res = self.showDialog()
 
         # copy the additional BEAM modules and set the amount of memory to be used with GPT
@@ -249,7 +255,7 @@ class woisInstaller():
         ########################################################################
         # Install R
 
-        self.dialog = rInstallWindow();
+        self.dialog = rInstallWindow()
         res = self.showDialog()
 
         # run the R installation here as an outside process
@@ -274,7 +280,8 @@ class woisInstaller():
             dirPath = str(self.dialog.dirPathText.toPlainText())
             dstPath = os.path.join(dirPath,"library")
             srcPath = "R additional libraries"
-            self.dialog = extractingWaitWindow(self.util, os.path.join(srcPath, "libraries.zip"), dstPath) # show dialog because it might take some time on slower computers
+            # show dialog because it might take some time on slower computers
+            self.dialog = extractingWaitWindow(self.util, os.path.join(srcPath, "libraries.zip"), dstPath)
             self.showDialog()
             if is32bit:
                 self.util.activateRplugin(dirPath, "false")
@@ -291,13 +298,13 @@ class woisInstaller():
         ########################################################################
         # Install PostGIS
 
-        self.dialog = postgreInstallWindow();
+        self.dialog = postgreInstallWindow()
         res = self.showDialog()
 
         # run the postgresql installer as an outside process
         if res == NEXT:
             self.util.execSubprocess(postgreInstall)
-            self.dialog = postgisInstallWindow();
+            self.dialog = postgisInstallWindow()
             res = self.showDialog()
         elif res == SKIP:
             pass
@@ -321,13 +328,13 @@ class woisInstaller():
         ########################################################################
         # Install MapWindow, SWAT and PEST
 
-        self.dialog = mapwindowInstallWindow();
+        self.dialog = mapwindowInstallWindow()
         res = self.showDialog()
 
         # run the MapWindow installer as an outside process
         if res == NEXT:
             self.util.execSubprocess(mapwindowInstall)
-            self.dialog = mwswatInstallWindow();
+            self.dialog = mwswatInstallWindow()
             res = self.showDialog()
         elif res == SKIP:
             pass
@@ -340,7 +347,7 @@ class woisInstaller():
         # run the MWSWAT installer as an outside process
         if res == NEXT:
             self.util.execSubprocess(mwswatInstall)
-            self.dialog = swateditorInstallWindow();
+            self.dialog = swateditorInstallWindow()
             res = self.showDialog()
         elif res == SKIP:
             pass
@@ -353,7 +360,7 @@ class woisInstaller():
         # run the SWAT editor installer as an outside process
         if res == NEXT:
             self.util.execSubprocess(swateditorInstall)
-            self.dialog = mwswatPostInstallWindow(mapwindowDefaultDir);
+            self.dialog = mwswatPostInstallWindow(mapwindowDefaultDir)
             res = self.showDialog()
         elif res == SKIP:
             pass
@@ -369,7 +376,8 @@ class woisInstaller():
             mwswatPath = os.path.join(dirPath,"Plugins","MWSWAT2009")
             dstPath = os.path.join(mwswatPath,'swat2009DtuEnvVers0.2')
             srcPath = "MWSWAT additional software\\swat2009DtuEnvVers0.2"
-            self.dialog = copyingWaitWindow(self.util, srcPath, dstPath) # show dialog because it might take some time on slower computers
+            # show dialog because it might take some time on slower computers
+            self.dialog = copyingWaitWindow(self.util, srcPath, dstPath)
             self.showDialog()
 
             # copy and rename the customised MWSWAT exe
@@ -383,7 +391,8 @@ class woisInstaller():
             # copy the modified database file
             self.util.copyFiles("MWSWAT additional software\\mwswat2009.mdb", mwswatPath)
             # copy PEST
-            self.dialog = copyingWaitWindow(self.util, "MWSWAT additional software\\PEST", os.path.join(mwswatPath,"PEST")) # show dialog because it might take some time on slower computers
+            self.dialog = copyingWaitWindow(self.util, "MWSWAT additional software\\PEST", os.path.join(mwswatPath,"PEST"))
+            # show dialog because it might take some time on slower computers
             self.showDialog()
             # activate the plugin
             self.util.activateSWATplugin(dirPath)
@@ -396,7 +405,7 @@ class woisInstaller():
             self.unknownActionPopup()
 
         # Finish
-        self.dialog = finishWindow();
+        self.dialog = finishWindow()
         self.showDialog()
         del self.dialog
 
@@ -449,11 +458,11 @@ class Utilities(QtCore.QObject):
 
     def deleteDir(self, dirPath):
         try:
-            shutil.rmtree(dirPath, ignore_errors = True)
+            shutil.rmtree(dirPath, ignore_errors=True)
         except:
             pass
 
-    def copyFiles(self, srcPath, dstPath, checkDstParentExists = True):
+    def copyFiles(self, srcPath, dstPath, checkDstParentExists=True):
 
         # a simple check to see if we are copying to the right directory by making sure that
         # its parent exists
@@ -555,30 +564,37 @@ class Utilities(QtCore.QObject):
     def setQGISSettings(self, name, value):
         self.qsettings.setValue(name, value)
 
+    def activateThis(self, *names):
+        # sets the requested option(s) to 'true'
+        for name in names:
+            self.setQGISSettings(name, 'true')
+
     def activatePlugins(self):
-        self.setQGISSettings("PythonPlugins/processing_workflow", "true")
-        self.setQGISSettings("PythonPlugins/openlayers_plugin", "true")
-        self.setQGISSettings("PythonPlugins/photo2shape", "true")
-        self.setQGISSettings("PythonPlugins/pointsamplingtool", "true")
-        self.setQGISSettings("PythonPlugins/processing", "true")
-        self.setQGISSettings("PythonPlugins/temporalprofiletool", "true")
-        self.setQGISSettings("PythonPlugins/valuetool", "true")
-        self.setQGISSettings("plugins/zonalstatisticsplugin", "true")
+        self.activateThis(
+                "PythonPlugins/processing_workflow",
+                "PythonPlugins/openlayers_plugin",
+                "PythonPlugins/photo2shape",
+                "PythonPlugins/pointsamplingtool",
+                "PythonPlugins/processing",
+                "PythonPlugins/temporalprofiletool",
+                "PythonPlugins/valuetool",
+                "plugins/zonalstatisticsplugin")
 
     def activateProcessingProviders(self,osgeo4wDefaultDir):
         self.setQGISSettings("Processing/configuration/ACTIVATE_GRASS70", "false")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_GRASS", "true")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_MODEL", "true")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_OTB", "true")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_QGIS", "true")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_SAGA", "true")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_SCRIPT", "true")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_WORKFLOW", "true")
-        self.setQGISSettings("Processing/configuration/GRASS_LOG_COMMANDS", "true")
-        self.setQGISSettings("Processing/configuration/GRASS_LOG_CONSOLE", "true")
-        self.setQGISSettings("Processing/configuration/SAGA_LOG_COMMANDS", "true")
-        self.setQGISSettings("Processing/configuration/SAGA_LOG_CONSOLE", "true")
-        self.setQGISSettings("Processing/configuration/USE_FILENAME_AS_LAYER_NAME", "true")
+        self.activateThis(
+                "Processing/configuration/ACTIVATE_GRASS",
+                "Processing/configuration/ACTIVATE_MODEL",
+                "Processing/configuration/ACTIVATE_OTB",
+                "Processing/configuration/ACTIVATE_QGIS",
+                "Processing/configuration/ACTIVATE_SAGA",
+                "Processing/configuration/ACTIVATE_SCRIPT",
+                "Processing/configuration/ACTIVATE_WORKFLOW",
+                "Processing/configuration/GRASS_LOG_COMMANDS",
+                "Processing/configuration/GRASS_LOG_CONSOLE",
+                "Processing/configuration/SAGA_LOG_COMMANDS",
+                "Processing/configuration/SAGA_LOG_CONSOLE",
+                "Processing/configuration/USE_FILENAME_AS_LAYER_NAME")
         # GRASS_FOLDER depends on GRASS version and is not updated automatically so it should
         # be set to the highest GRASS version present in the GRASS folder
         try:
@@ -589,25 +605,30 @@ class Utilities(QtCore.QObject):
             pass
 
     def activateBEAMplugin(self, dirPath):
-        self.setQGISSettings("PythonPlugins/processing_gpf", "true")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_BEAM", "true")
+        self.activateThis(
+                "PythonPlugins/processing_gpf",
+                "Processing/configuration/ACTIVATE_BEAM")
         self.setQGISSettings("Processing/configuration/BEAM_FOLDER", dirPath)
 
     def activateSNAPplugin(self, dirPath):
-        self.setQGISSettings("PythonPlugins/processing_gpf", "true")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_SNAP", "true")
-        self.setQGISSettings("Processing/configuration/S1TBX_ACTIVATE", "true")
-        self.setQGISSettings("Processing/configuration/S2TBX_ACTIVATE", "true")
+        self.activateThis(
+                "PythonPlugins/processing_gpf",
+                "Processing/configuration/ACTIVATE_SNAP")
+        self.activateThis(
+                "Processing/configuration/S1TBX_ACTIVATE",
+                "Processing/configuration/S2TBX_ACTIVATE")
         self.setQGISSettings("Processing/configuration/SNAP_FOLDER", dirPath)
 
     def activateRplugin(self, dirPath, use64):
-        self.setQGISSettings("Processing/configuration/ACTIVATE_R", "true")
+        self.activateThis(
+                "Processing/configuration/ACTIVATE_R")
         self.setQGISSettings("Processing/configuration/R_FOLDER", dirPath)
         self.setQGISSettings("Processing/configuration/R_USE64", use64)
 
     def activateSWATplugin(self, dirPath):
-        self.setQGISSettings("PythonPlugins/processing_SWAT", "true")
-        self.setQGISSettings("Processing/configuration/ACTIVATE_WG9HM", "true")
+        self.activateThis(
+                "PythonPlugins/processing_SWAT",
+                "Processing/configuration/ACTIVATE_WG9HM")
         self.setQGISSettings("Processing/configuration/MAPWINDOW_FOLDER", dirPath)
 
 if __name__ == '__main__':
