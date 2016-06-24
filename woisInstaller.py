@@ -49,10 +49,10 @@ class woisInstaller():
     def __init__(self):
         self.util = Utilities()
 
-    def runInstaller (self):
+    def runInstaller(self):
         ########################################################################
         # welcome window with license
-        self.dialog =  installerWelcomeWindow()
+        self.dialog = installerWelcomeWindow()
         res = self.showDialog()
 
         if res == NEXT:
@@ -103,7 +103,7 @@ class woisInstaller():
 
         ########################################################################
         # Information about uninstalling old version
-        self.dialog = uninstallInstructionsWindow();
+        self.dialog = uninstallInstructionsWindow()
         res = self.showDialog()
         if res == CANCEL:
             del self.dialog
@@ -112,7 +112,7 @@ class woisInstaller():
         ########################################################################
         # Install OSGeo4W (QGIS, OTB, SAGA, GRASS)
 
-        self.dialog = osgeo4wInstallWindow();
+        self.dialog = osgeo4wInstallWindow()
         res = self.showDialog()
 
         # run the OSGeo4W installation here as an outside process
@@ -176,7 +176,7 @@ class woisInstaller():
             self.unknownActionPopup()
 
         # ask for post-installation even if user has skipped installation
-        self.dialog = beamPostInstallWindow(beamDefaultDir);
+        self.dialog = beamPostInstallWindow(beamDefaultDir)
         res = self.showDialog()
 
         # copy the additional BEAM modules and set the amount of memory to be used with GPT
@@ -205,7 +205,7 @@ class woisInstaller():
         ########################################################################
         # Install Snap Toolbox
 
-        self.dialog = snapInstallWindow();
+        self.dialog = snapInstallWindow()
         res = self.showDialog()
 
         # run the Snap installation here as an outside process
@@ -556,10 +556,11 @@ class Utilities(QtCore.QObject):
                 line = re.sub(r"-XX:\+UseLoopPredicate ", "", line)
                 outfile.write(line)
         tempDir = os.path.dirname(tempFilePath)
-        if os.path.isfile(os.path.join(tempDir,"gpt.bat")):
-            os.remove(os.path.join(tempDir,"gpt.bat"))
-        os.rename(tempFilePath, os.path.join(tempDir,"gpt.bat"))
-        shutil.copy(os.path.join(tempDir,"gpt.bat"), batFilePath)
+        tempgpt = os.path.join(tempDir, "gpt.bat")
+        if os.path.isfile(tempgpt):
+            os.remove(tempgpt)
+        os.rename(tempFilePath, tempgpt)
+        shutil.copy(tempgpt, batFilePath)
 
     def setQGISSettings(self, name, value):
         self.qsettings.setValue(name, value)
