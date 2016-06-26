@@ -160,15 +160,17 @@ class osgeo4wInstallWindow(installWindow):
         self.instructionMainLabel.setText(_translate("MainWindow", "After clicking on the \"Install\" button the OSGeo4W installer will start. The process should be automatic but if any question dialogs pop-up just click OK.", None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install QGIS, Orfeo Toolbox and GRASS GIS", None))
 
-class osgeo4wPostInstallWindow(installWindow):
-    def __init__(self):
-        installWindow.__init__(self)
+class osgeo4wPostInstallWindow(postInstallWindow):
+    def __init__(self, defaultPath):
+        self.defaultPath = defaultPath
+        postInstallWindow.__init__(self)
         self.componentLogoLabel.setPixmap(QtGui.QPixmap(_fromUtf8("images/osgeo4wLogo.png")))
 
     def retranslateUi(self, MainWindow):
         super(osgeo4wPostInstallWindow, self).retranslateUi(MainWindow)
         self.topLabel.setText(_translate("MainWindow", "QGIS is the main GUI used by WOIS while Orfeo Toolbox and GRASS GIS provide many of the commonly used data processing functions. They are installed together through the OSGeo4W installer.", None))
-        self.instructionMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for QGIS (activating plugins, copying extra libraries, etc.).", None))
+        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for QGIS (activating plugins, copying extra libraries, etc.).", None))
+        self.dirPathText.setPlainText(_translate("MainWindow", self.defaultPath, None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install QGIS, Orfeo Toolbox and GRASS GIS", None))
 
 
@@ -337,6 +339,45 @@ class finishWindow(instructionsWindow):
         self.cancelButton.setText(_translate("MainWindow", "Finish", None))
 
 
+# cmd please wait
+class cmdWaitWindow(instructionsWindow, QtCore.QObject):
+
+    def __init__(self, utilities, cmd):
+        QtCore.QObject.__init__(self)
+
+        self.utilities = utilities
+        self.cmd = cmd
+
+        # Use a thread and modified QDialog to display the waiting dialog and
+        # run the cmd at the same time
+        self.workerThread = QtCore.QThread(self)
+        self.MainWindow = myQDialog(self.workerThread)
+        instructionsWindow.__init__(self, self.MainWindow)
+
+        self.utilities.moveToThread(self.workerThread)
+        self.utilities.finished.connect(self.workerThread.quit)
+        self.workerThread.finished.connect(self.slotFinished)
+        self.workerThread.started.connect(self.startAction)
+
+    def retranslateUi(self, MainWindow):
+        super(cmdWaitWindow, self).retranslateUi(MainWindow)
+        self.topLabel.setText(_translate("MainWindow", "Running an external install command. Please wait...", None))
+        self.instructionsMainLabel.setVisible(False)
+        self.continueButton.setVisible(False)
+        self.instructionsHeaderLabel.setVisible(False)
+        self.bottomLabel.setVisible(False)
+        self.instructionsFooterLabel.setVisible(False)
+        self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Running install command.", None))
+        self.cancelButton.setVisible(False)
+
+    def startAction(self):
+        self.utilities.execute_cmd(self.cmd)
+
+    def slotFinished(self):
+        self.action = NEXT
+        self.MainWindow.close()
+
+
 # Extracting please wait
 class extractingWaitWindow(instructionsWindow, QtCore.QObject):
 
@@ -357,7 +398,6 @@ class extractingWaitWindow(instructionsWindow, QtCore.QObject):
         self.utilities.finished.connect(self.workerThread.quit)
         self.workerThread.finished.connect(self.slotFinished)
         self.workerThread.started.connect(self.startAction)
-
 
     def retranslateUi(self, MainWindow):
         super(extractingWaitWindow, self).retranslateUi(MainWindow)

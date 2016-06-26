@@ -30,7 +30,7 @@ from PyQt4 import QtCore, QtGui
 from installerGUI import installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, snapInstallWindow, snapPostInstallWindow
 from installerGUI import osgeo4wInstallWindow, osgeo4wPostInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, finishWindow
-from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
+from installerGUI import extractingWaitWindow, copyingWaitWindow, cmdWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
 from installerGUI import CANCEL,SKIP,NEXT
 import sys
 import os
@@ -38,6 +38,8 @@ import errno
 import shutil
 import subprocess
 import re
+import traceback
+import tempfile
 from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
 from distutils import dir_util
@@ -127,11 +129,19 @@ class woisInstaller():
             self.unknownActionPopup()
 
         # ask for post-installation even if user has skipped installation
-        self.dialog = osgeo4wPostInstallWindow()
+        self.dialog = osgeo4wPostInstallWindow(osgeo4wDefaultDir)
         res = self.showDialog()
 
         # copy plugins, scripts, and models and activate processing providers
         if res == NEXT:
+            # pip installations
+            dirPath = str(self.dialog.dirPathText.toPlainText())
+            pipbat = os.path.join("QGIS WOIS plugins", 'pip_installs', 'install_pip_packages.bat')
+            if installer_utils.check_file_exists(pipbat):
+                cmd = [pipbat, dirPath]
+                # show dialog because it might take some time on slower computers
+                self.dialog = cmdWaitWindow(self.util, cmd)
+                self.showDialog()
             # copy the plugins
             dstPath = os.path.join(os.path.expanduser("~"),".qgis2","python")
             srcPath = os.path.join("QGIS WOIS plugins", "plugins.zip")
@@ -463,6 +473,35 @@ class Utilities(QtCore.QObject):
                 ).stdout
         for line in iter(proc.readline, ""):
             pass
+
+    def execute_cmd(self, cmd):
+        """Execute cmd and save output to log file"""
+        with tempfile.NamedTemporaryFile(prefix='wois_installer_', suffix='.log', delete=False) as f:
+            output = ''
+            try:
+                si = subprocess.STARTUPINFO()
+                si.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                output = subprocess.check_output(cmd,
+                        stdin=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        startupinfo=si)
+            #except (subprocess.CalledProcessError, WindowsError, OSError):
+            except:
+                trace = traceback.format_exc()
+                msgBox = QtGui.QMessageBox()
+                msgBox.setText("An error occurred: {}. Log written to \'{}\'.".format(trace, f.name))
+                msgBox.exec_()
+                f.write(trace)
+
+            if output:
+                f.write(output)
+                # debugging only
+                if True:
+                    msgBox = QtGui.QMessageBox()
+                    msgBox.setText("Output was\n{}".format(output))
+                    msgBox.exec_()
+
+        self.finished.emit()
 
     def deleteFile(self, filePath):
         try:
