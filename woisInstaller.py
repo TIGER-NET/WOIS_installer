@@ -496,7 +496,7 @@ class Utilities(QtCore.QObject):
             if output:
                 f.write(output)
                 # debugging only
-                if True:
+                if False:
                     msgBox = QtGui.QMessageBox()
                     msgBox.setText("Output was\n{}".format(output))
                     msgBox.exec_()
