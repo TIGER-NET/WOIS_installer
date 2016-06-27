@@ -169,7 +169,7 @@ class osgeo4wPostInstallWindow(postInstallWindow):
     def retranslateUi(self, MainWindow):
         super(osgeo4wPostInstallWindow, self).retranslateUi(MainWindow)
         self.topLabel.setText(_translate("MainWindow", "QGIS is the main GUI used by WOIS while Orfeo Toolbox and GRASS GIS provide many of the commonly used data processing functions. They are installed together through the OSGeo4W installer.", None))
-        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for QGIS (activating plugins, copying extra libraries, etc.).", None))
+        self.instructionsMainLabel.setText(_translate("MainWindow", "The WOIS installer will now perform additional post installation tasks for QGIS (activating plugins, copying extra libraries, etc.). If you changed the OSGeo4W/QGIS installation directory during the previous step (or skipped the step), make sure that you check the path to the directory below and update it if necessary.", None))
         self.dirPathText.setPlainText(_translate("MainWindow", self.defaultPath, None))
         self.MainWindow.setWindowTitle(_translate("MainWindow", "WOIS Installation - Install QGIS, Orfeo Toolbox and GRASS GIS", None))
 
