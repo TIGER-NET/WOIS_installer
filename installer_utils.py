@@ -92,3 +92,13 @@ def modifyRamInBatFiles(batFilePath, useRamFraction):
         except:
             shutil.move(backupfile, batFilePath)
             raise
+
+
+def check_file_exists(filepath):
+    if not os.path.isfile(filepath):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setText("Could not find the required file \'{}\'.\n\n Skipping this step.".format(filepath))
+        msgBox.exec_()
+        return False
+    else:
+        return True
