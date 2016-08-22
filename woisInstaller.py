@@ -34,6 +34,7 @@ from installerGUI import extractingWaitWindow, copyingWaitWindow, cmdWaitWindow,
 from installerGUI import CANCEL,SKIP,NEXT
 import sys
 import os
+import glob
 import errno
 import shutil
 import subprocess
@@ -649,13 +650,19 @@ class Utilities(QtCore.QObject):
                 "Processing/configuration/SAGA_LOG_COMMANDS",
                 "Processing/configuration/SAGA_LOG_CONSOLE",
                 "Processing/configuration/USE_FILENAME_AS_LAYER_NAME")
-        # GRASS_FOLDER depends on GRASS version and is not updated automatically so it should
-        # be set to the highest GRASS version present in the GRASS folder
+        # GRASS_FOLDER depends on GRASS version and must be set explicitly here
         try:
-            grassFolder = os.path.join(osgeo4wDefaultDir, 'apps', 'grass')
-            grassFolder = os.path.join(grassFolder, next(os.walk(grassFolder))[1][-1])
+            grass_root = os.path.join(osgeo4wDefaultDir, 'apps', 'grass')
+            grass_folders = sorted([d for d in glob.glob(os.path.join(grass_root, 'grass-*')) if os.path.isdir(d)])
+            grass6_folders = [d for d in grass_folders if os.path.basename(d).startswith('grass-6')]
+            try:
+                # highest GRASS6 version
+                grassFolder = grass6_folders[-1]
+            except IndexError:
+                # highest GRASS version
+                grassFolder = grass_folders[-1]
             self.setQGISSettings("Processing/configuration/GRASS_FOLDER", grassFolder)
-        except:
+        except (IndexError, OSError):
             pass
 
     def activateBEAMplugin(self, dirPath):
