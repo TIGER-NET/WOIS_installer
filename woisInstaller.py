@@ -65,7 +65,7 @@ class woisInstaller():
                 installationsDir = "Installations_x32"
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
                 beamInstall = os.path.join(installationsDir, "beam_5.0_win32_installer.exe")
-                snapInstall = os.path.join(installationsDir, "esa-snap_sentinel_windows-x32_3_0.exe")
+                snapInstall = os.path.join(installationsDir, "esa-snap_sentinel_windows_3_0.exe")
                 rInstall = os.path.join(installationsDir, "R-3.1.3-win.exe")
                 postgreInstall = os.path.join(installationsDir, "postgresql-9.3.6-2-windows.exe")
                 postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x32-setup-2.1.5-1.exe")
