@@ -7,3 +7,8 @@ This is not the complete WOIS software package. The actual software can be downl
 
 
 Copyright (C) 2015 TIGER-NET (www.tiger-net.org) 
+
+
+## Building
+
+Building the installer requires pyqt version 4. Install it in Anaconda with `conda install pyqt=4`.
