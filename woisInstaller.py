@@ -60,7 +60,8 @@ class woisInstaller():
 
         if res == NEXT:
             # select installation files for 32 or 64 bit install
-            if self.dialog.osComboBox.itemText(self.dialog.osComboBox.currentIndex()) == "32 bit":
+            installationsDirs = ['Installations_x32', 'Installations_x64']
+            if os.path.isdir(installationsDirs[0]):
                 is32bit = True
                 installationsDir = "Installations_x32"
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
@@ -72,7 +73,7 @@ class woisInstaller():
                 mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v488SR-installer.exe")
                 mwswatInstall = os.path.join(installationsDir, "MWSWAT2009.exe")
                 swateditorInstall = "MWSWAT additional software\\SwatEditor_Install\\Setup.exe"
-            else:
+            elif os.path.isdir(installationsDirs[1]):
                 is32bit = False
                 installationsDir = "Installations_x64"
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
@@ -84,6 +85,8 @@ class woisInstaller():
                 mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v488SR-installer.exe")
                 mwswatInstall = os.path.join(installationsDir, "MWSWAT2009.exe")
                 swateditorInstall = "MWSWAT additional software\\SwatEditor_Install\\Setup.exe"
+            else:
+                raise RuntimeError('Neither 32 bit nor 64 bit instalations directory exists. Package incomplete.')
             # select default installation directories for 32 or 64 bit install
             if is32bit:
                 osgeo4wDefaultDir = "C:\\OSGeo4W"
