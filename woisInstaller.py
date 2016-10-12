@@ -635,7 +635,7 @@ class Utilities(QtCore.QObject):
                 "PythonPlugins/valuetool",
                 "plugins/zonalstatisticsplugin")
 
-    def activateProcessingProviders(self,osgeo4wDefaultDir):
+    def activateProcessingProviders(self, osgeo4wDefaultDir):
         self.setQGISSettings("Processing/configuration/ACTIVATE_GRASS70", "false")
         self.activateThis(
                 "Processing/configuration/ACTIVATE_GRASS",
@@ -645,11 +645,14 @@ class Utilities(QtCore.QObject):
                 "Processing/configuration/ACTIVATE_SAGA",
                 "Processing/configuration/ACTIVATE_SCRIPT",
                 "Processing/configuration/ACTIVATE_WORKFLOW",
+                "Processing/configuration/ACTIVATE_WOIS_TOOLBOX",
                 "Processing/configuration/GRASS_LOG_COMMANDS",
                 "Processing/configuration/GRASS_LOG_CONSOLE",
                 "Processing/configuration/SAGA_LOG_COMMANDS",
                 "Processing/configuration/SAGA_LOG_CONSOLE",
-                "Processing/configuration/USE_FILENAME_AS_LAYER_NAME")
+                "Processing/configuration/USE_FILENAME_AS_LAYER_NAME",
+                "Processing/configuration/TASKBAR_BUTTON_WOIS_TOOLBOX")
+        self.setQGISSettings("Processing/configuration/TASKBAR_BUTTON_WORKFLOW", "false")
         # GRASS_FOLDER depends on GRASS version and must be set explicitly here
         try:
             grass_root = os.path.join(osgeo4wDefaultDir, 'apps', 'grass')
