@@ -60,9 +60,10 @@ class woisInstaller():
 
         if res == NEXT:
             # select installation files for 32 or 64 bit install
-            if self.dialog.osComboBox.itemText(self.dialog.osComboBox.currentIndex()) == "32 bit":
+            installationsDirs = ['Installations_x32', 'Installations_x64']
+            if os.path.isdir(installationsDirs[0]):
                 is32bit = True
-                installationsDir = "Installations_x32"
+                installationsDir = installationsDirs[0]
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
                 beamInstall = os.path.join(installationsDir, "beam_5.0_win32_installer.exe")
                 snapInstall = os.path.join(installationsDir, "esa-snap_sentinel_windows_5_0.exe")
@@ -72,9 +73,9 @@ class woisInstaller():
                 mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v488SR-installer.exe")
                 mwswatInstall = os.path.join(installationsDir, "MWSWAT2009.exe")
                 swateditorInstall = "MWSWAT additional software\\SwatEditor_Install\\Setup.exe"
-            else:
+            elif os.path.isdir(installationsDirs[1]):
                 is32bit = False
-                installationsDir = "Installations_x64"
+                installationsDir = installationsDirs[1]
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
                 beamInstall = os.path.join(installationsDir, "beam_5.0_win64_installer.exe")
                 snapInstall = os.path.join(installationsDir, "esa-snap_sentinel_windows-x64_5_0.exe")
@@ -84,6 +85,9 @@ class woisInstaller():
                 mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v488SR-installer.exe")
                 mwswatInstall = os.path.join(installationsDir, "MWSWAT2009.exe")
                 swateditorInstall = "MWSWAT additional software\\SwatEditor_Install\\Setup.exe"
+            else:
+                self.util.error_exit('Neither 32 bit nor 64 bit instalations directory exists. Package incomplete.')
+                return
             # select default installation directories for 32 or 64 bit install
             if is32bit:
                 osgeo4wDefaultDir = "C:\\OSGeo4W"
@@ -517,26 +521,26 @@ class Utilities(QtCore.QObject):
         except:
             pass
 
+    def error_exit(self, msg):
+        msgBox = QtGui.QMessageBox()
+        msgBox.setText(msg)
+        msgBox.exec_()
+        self.finished.emit()
+
     def copyFiles(self, srcPath, dstPath, checkDstParentExists=True):
 
         # a simple check to see if we are copying to the right directory by making sure that
         # its parent exists
         if checkDstParentExists:
             if not os.path.isdir(os.path.dirname(dstPath)):
-                msgBox = QtGui.QMessageBox()
-                msgBox.setText("Could not find the destination directory!\n\n No files were copied.")
-                msgBox.exec_()
-                self.finished.emit()
+                self.error_exit("Could not find the destination directory!\n\n No files were copied.")
                 return
 
         # checkWritePremissions alsoe creates the directory if it doesn't exist yet
         if not self.checkWritePermissions(dstPath):
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n"+
-                           "Re-run the installer with administrator privileges or manually copy files from "+srcPath+
-                           " to "+dstPath+" after the installation process is over.")
-            msgBox.exec_()
-            self.finished.emit()
+            self.error_exit("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n"+
+                            "Re-run the installer with administrator privileges or manually copy files from "+srcPath+
+                            " to "+dstPath+" after the installation process is over.")
             return
 
         # for directories copy the whole directory recursively
@@ -554,20 +558,14 @@ class Utilities(QtCore.QObject):
 
     def unzipArchive(self, archivePath, dstPath):
         if not os.path.isfile(archivePath):
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("Could not find the archive!\n\n No files were extracted.")
-            msgBox.exec_()
-            self.finished.emit()
+            self.error_exit("Could not find the archive!\n\n No files were extracted.")
             return
 
         # checkWritePremissions also creates the directory if it doesn't exist yet
         if not self.checkWritePermissions(dstPath):
-            msgBox = QtGui.QMessageBox()
-            msgBox.setText("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n"+
+            self.error_exit("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n"+
                            "Re-run the installer with administrator privileges or manually unzip files from "+archivePath+
                            " to "+dstPath+" after the installation process is over.")
-            msgBox.exec_()
-            self.finished.emit()
             return
 
         archive = ZipFile(archivePath)

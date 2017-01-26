@@ -36,29 +36,6 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QComboBox" name="osComboBox">
-   <property name="geometry">
-    <rect>
-     <x>280</x>
-     <y>150</y>
-     <width>81</width>
-     <height>16</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QLabel" name="osLabel">
-   <property name="geometry">
-    <rect>
-     <x>20</x>
-     <y>150</y>
-     <width>251</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Choose your operating system (32 bit or 64 bit):</string>
-   </property>
-  </widget>
   <widget class="QLabel" name="licenseLabel">
    <property name="geometry">
     <rect>
