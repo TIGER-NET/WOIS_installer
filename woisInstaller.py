@@ -30,7 +30,7 @@ from PyQt4 import QtCore, QtGui
 from installerGUI import installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, snapInstallWindow, snapPostInstallWindow
 from installerGUI import osgeo4wInstallWindow, osgeo4wPostInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, finishWindow
-from installerGUI import extractingWaitWindow, copyingWaitWindow, cmdWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
+from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
 from installerGUI import CANCEL,SKIP,NEXT
 import sys
 import os
@@ -141,12 +141,6 @@ class woisInstaller():
         if res == NEXT:
             # pip installations
             dirPath = str(self.dialog.dirPathText.toPlainText())
-            pipbat = os.path.join("QGIS WOIS plugins", 'pip_installs', 'install_pip_packages.bat')
-            if installer_utils.check_file_exists(pipbat):
-                cmd = [pipbat, dirPath]
-                # show dialog because it might take some time on slower computers
-                self.dialog = cmdWaitWindow(self.util, cmd)
-                self.showDialog()
             # copy the plugins
             dstPath = os.path.join(os.path.expanduser("~"),".qgis2","python")
             srcPath = os.path.join("QGIS WOIS plugins", "plugins.zip")
