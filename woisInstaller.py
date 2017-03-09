@@ -25,12 +25,11 @@
 * with this program.  If not, see <http://www.gnu.org/licenses/>.         *
 ***************************************************************************
 """
-
 from PyQt4 import QtCore, QtGui
 from installerGUI import installerWelcomeWindow, beamInstallWindow, beamPostInstallWindow, snapInstallWindow, snapPostInstallWindow
 from installerGUI import osgeo4wInstallWindow, osgeo4wPostInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, finishWindow
-from installerGUI import extractingWaitWindow, copyingWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
+from installerGUI import extractingWaitWindow, copyingWaitWindow, cmdWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
 from installerGUI import CANCEL,SKIP,NEXT
 import sys
 import os
@@ -214,10 +213,6 @@ class woisInstaller():
             ram_fraction = 0.4 if is32bit else 0.6
             installer_utils.modifyRamInBatFiles(os.path.join(dirPath, "bin", 'gpt.bat'), ram_fraction)
             self.util.activateBEAMplugin(dirPath)
-            # Temporary fix for https://github.com/TIGER-NET/Processing-GPF/issues/1, until new version of BEAM is out.
-            # When that happens also remove beam-meris-radiometry-5.0.1.jar from "BEAM additional modules"
-            #self.util.deleteFile(os.path.join(dstPath, "beam-meris-radiometry-5.0.jar"))
-            #self.util.deleteFile(os.path.join(dstPath, "beam-meris-case2-regional-1.6.jar"))
         elif res == SKIP:
             pass
         elif res == CANCEL:
@@ -252,6 +247,12 @@ class woisInstaller():
         # Set the amount of memory to be used with NEST GPT
         if res == NEXT:
             dirPath = str(self.dialog.dirPathText.toPlainText())
+            confbat = os.path.join(dirPath, 'bin', 'snappy-conf.bat')
+            osgeopython = os.path.join(osgeo4wDefaultDir, 'bin', 'python.exe')
+            cmd = [confbat, osgeopython]
+            # show dialog because it might take some time on slower computers
+            self.dialog = cmdWaitWindow(self.util, cmd)
+            self.showDialog()
             dstPath = os.path.join(os.path.expanduser("~"), ".snap")
             srcPath = "SNAP additional modules"
             self.util.copyFiles(srcPath, dstPath)
@@ -687,6 +688,7 @@ class Utilities(QtCore.QObject):
                 "PythonPlugins/processing_SWAT",
                 "Processing/configuration/ACTIVATE_WG9HM")
         self.setQGISSettings("Processing/configuration/MAPWINDOW_FOLDER", dirPath)
+
 
 if __name__ == '__main__':
 
