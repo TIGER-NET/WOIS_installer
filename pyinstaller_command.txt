@@ -1,1 +1,1 @@
-pyinstaller woisInstaller.py -F -w -i WOIS.ico 
+pyinstaller installer.py -F -w -i WOIS.ico 
