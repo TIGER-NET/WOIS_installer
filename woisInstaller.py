@@ -1,6 +1,6 @@
 """
 ***************************************************************************
-   woisInstaller.py
+   Installer.py
 -------------------------------------
     Copyright (C) 2014 TIGER-NET (www.tiger-net.org)
 
@@ -31,22 +31,23 @@ from installerGUI import osgeo4wInstallWindow, osgeo4wPostInstallWindow, rInstal
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, finishWindow
 from installerGUI import extractingWaitWindow, copyingWaitWindow, cmdWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
 from installerGUI import CANCEL,SKIP,NEXT
-import sys
 import os
+import sys
+import re
 import glob
 import errno
 import shutil
 import subprocess
-import re
 import traceback
 import tempfile
+import time
 from tempfile import NamedTemporaryFile
 from zipfile import ZipFile
 from distutils import dir_util
 
 import installer_utils
 
-class woisInstaller():
+class Installer():
 
     def __init__(self):
         self.util = Utilities()
@@ -66,7 +67,7 @@ class woisInstaller():
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
                 beamInstall = os.path.join(installationsDir, "beam_5.0_win32_installer.exe")
                 snapInstall = os.path.join(installationsDir, "esa-snap_sentinel_windows_5_0.exe")
-                rInstall = os.path.join(installationsDir, "R-3.1.3-win.exe")
+                rInstall = os.path.join(installationsDir, "R-3.3.2-win.exe")
                 postgreInstall = os.path.join(installationsDir, "postgresql-9.3.6-2-windows.exe")
                 postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x32-setup-2.1.5-1.exe")
                 mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v488SR-installer.exe")
@@ -78,7 +79,7 @@ class woisInstaller():
                 osgeo4wInstall = os.path.join(installationsDir, "osgeo4w-setup.bat")
                 beamInstall = os.path.join(installationsDir, "beam_5.0_win64_installer.exe")
                 snapInstall = os.path.join(installationsDir, "esa-snap_sentinel_windows-x64_5_0.exe")
-                rInstall = os.path.join(installationsDir, "R-3.1.3-win.exe")
+                rInstall = os.path.join(installationsDir, "R-3.3.2-win.exe")
                 postgreInstall = os.path.join(installationsDir, "postgresql-9.3.6-2-windows-x64.exe")
                 postgisInstall = os.path.join(installationsDir, "postgis-bundle-pg93x64-setup-2.1.5-2.exe")
                 mapwindowInstall = os.path.join(installationsDir, "MapWindowx86Full-v488SR-installer.exe")
@@ -93,13 +94,13 @@ class woisInstaller():
                 snapDefaultDir = "C:\\Program Files\\snap"
                 beamDefaultDir = "C:\\Program Files\\beam-5.0"
                 mapwindowDefaultDir = "C:\\Program Files\\MapWindow"
-                rDefaultDir = "C:\\Program Files\\R\\R-3.1.3"
+                rDefaultDir = "C:\\Program Files\\R\\R-3.3.2"
             else:
                 osgeo4wDefaultDir = "C:\\OSGeo4W64"
                 snapDefaultDir = "C:\\Program Files\\snap"
                 beamDefaultDir = "C:\\Program Files\\beam-5.0"
                 mapwindowDefaultDir = "C:\\Program Files (x86)\\MapWindow"
-                rDefaultDir = "C:\\Program Files\\R\\R-3.1.3"
+                rDefaultDir = "C:\\Program Files\\R\\R-3.3.2"
 
         elif res == CANCEL:
             del self.dialog
@@ -141,8 +142,8 @@ class woisInstaller():
             # pip installations
             dirPath = str(self.dialog.dirPathText.toPlainText())
             # copy the plugins
-            dstPath = os.path.join(os.path.expanduser("~"),".qgis2","python")
-            srcPath = os.path.join("QGIS WOIS plugins", "plugins.zip")
+            dstPath = os.path.join(os.path.expanduser("~"), ".qgis2", "python", 'plugins')
+            srcPath = os.path.join("QGIS additional software", "plugins.zip")
             # try to delete old plugins before copying the new ones to avoid conflicts
             plugins_to_delete = [
                 'mikecprovider',
@@ -157,16 +158,31 @@ class woisInstaller():
                 'valuetool']
             for plugin in plugins_to_delete:
                 self.util.deleteDir(
-                        os.path.join(dstPath, 'plugins', plugin))
+                        os.path.join(dstPath, plugin))
             # show dialog because it might take some time on slower computers
             self.dialog = extractingWaitWindow(self.util, srcPath, dstPath)
             self.showDialog()
             # copy scripts and models
-            dstPath = os.path.join(os.path.expanduser("~"),".qgis2","processing")
-            srcPath = os.path.join("QGIS WOIS plugins", "scripts_and_models.zip")
-            # show dialog because it might take some time on slower computers
-            self.dialog = extractingWaitWindow(self.util, srcPath, dstPath)
+            QGIS_extras_dir = os.path.abspath("QGIS additional software")
+            dstPath = os.path.join(os.path.expanduser("~"), ".qgis2", "processing")
+            for zipfname in [
+                    'WOIS_scripts.zip', 'WOIS_models_and_workflows.zip',
+                    'GWA_scripts.zip', 'GWA_models_and_workflows.zip']:
+                srcPath = os.path.join(QGIS_extras_dir, zipfname)
+                # show dialog because it might take some time on slower computers
+                self.dialog = extractingWaitWindow(self.util, srcPath, dstPath)
+                self.showDialog()
+            # additional python modules
+            site_packages = os.path.join(dirPath, 'apps', 'Python27', 'Lib', 'site-packages')
+            # install fmask and rios
+            srcPath = os.path.join(QGIS_extras_dir, 'fmask-rios.zip')
+            self.dialog = extractingWaitWindow(self.util, srcPath, site_packages)
             self.showDialog()
+            # install cv2
+            srcPath = os.path.join(QGIS_extras_dir, 'cv2.zip')
+            self.dialog = extractingWaitWindow(self.util, srcPath, site_packages)
+            self.showDialog()
+
             # activate plugins and processing providers
             self.util.activatePlugins()
             self.util.activateProcessingProviders(osgeo4wDefaultDir)
@@ -178,8 +194,7 @@ class woisInstaller():
         else:
             self.unknownActionPopup()
 
-
-        ########################################################################
+        # #######################################################################
         # Install BEAM
 
         self.dialog = beamInstallWindow()
@@ -188,8 +203,8 @@ class woisInstaller():
         # run the BEAM installation here as an outside process
         if res == NEXT:
             self.util.execSubprocess(beamInstall)
-            #self.dialog =  beamPostInstallWindow(beamDefaultDir);
-            #res = self.showDialog()
+            # self.dialog =  beamPostInstallWindow(beamDefaultDir);
+            # res = self.showDialog()
         elif res == SKIP:
             pass
         elif res == CANCEL:
@@ -276,8 +291,7 @@ class woisInstaller():
         else:
             self.unknownActionPopup()
 
-
-        ########################################################################
+        # #######################################################################
         # Install R
 
         self.dialog = rInstallWindow()
@@ -286,8 +300,8 @@ class woisInstaller():
         # run the R installation here as an outside process
         if res == NEXT:
             self.util.execSubprocess(rInstall)
-            #self.dialog = rPostInstallWindow(rDefaultDir)
-            #res = self.showDialog()
+            # self.dialog = rPostInstallWindow(rDefaultDir)
+            # res = self.showDialog()
         elif res == SKIP:
             pass
         elif res == CANCEL:
@@ -322,15 +336,15 @@ class woisInstaller():
 
         ########################################################################
         # Install PostGIS
+        postgres_installed = False
 
         self.dialog = postgreInstallWindow()
         res = self.showDialog()
 
-        # run the postgresql installer as an outside process
+        # install Postgres
         if res == NEXT:
             self.util.execSubprocess(postgreInstall)
-            self.dialog = postgisInstallWindow()
-            res = self.showDialog()
+            postgres_installed = True
         elif res == SKIP:
             pass
         elif res == CANCEL:
@@ -339,95 +353,108 @@ class woisInstaller():
         else:
             self.unknownActionPopup()
 
-        # run the postgis installer as an outside process
-        if res == NEXT:
-            self.util.execSubprocess(postgisInstall)
-        elif res == SKIP:
-            pass
-        elif res == CANCEL:
-            del self.dialog
-            return
-        else:
-            self.unknownActionPopup()
+        if postgres_installed:
+            # install PostGIS
+            self.dialog = postgisInstallWindow()
+            res = self.showDialog()
+            if res == NEXT:
+                self.util.execSubprocess(postgisInstall)
+            elif res == SKIP:
+                pass
+            elif res == CANCEL:
+                del self.dialog
+                return
+            else:
+                self.unknownActionPopup()
 
         ########################################################################
         # Install MapWindow, SWAT and PEST
+        mapwindow_installed = False
+        mswat_installed = False
+        swateditor_installed = False
 
+        # install MapWindow
         self.dialog = mapwindowInstallWindow()
         res = self.showDialog()
-
-        # run the MapWindow installer as an outside process
         if res == NEXT:
             self.util.execSubprocess(mapwindowInstall)
+            mapwindow_installed = True
+        elif res == SKIP:
+            pass
+        elif res == CANCEL:
+            del self.dialog
+            return
+        else:
+            self.unknownActionPopup()
+
+        if mapwindow_installed:
+            # install MS SWAT
             self.dialog = mwswatInstallWindow()
             res = self.showDialog()
-        elif res == SKIP:
-            pass
-        elif res == CANCEL:
-            del self.dialog
-            return
-        else:
-            self.unknownActionPopup()
+            if res == NEXT:
+                self.util.execSubprocess(mwswatInstall)
+                mswat_installed = True
+            elif res == SKIP:
+                pass
+            elif res == CANCEL:
+                del self.dialog
+                return
+            else:
+                self.unknownActionPopup()
 
-        # run the MWSWAT installer as an outside process
-        if res == NEXT:
-            self.util.execSubprocess(mwswatInstall)
+        if mswat_installed:
+            # install SWAT editor
             self.dialog = swateditorInstallWindow()
             res = self.showDialog()
-        elif res == SKIP:
-            pass
-        elif res == CANCEL:
-            del self.dialog
-            return
-        else:
-            self.unknownActionPopup()
+            if res == NEXT:
+                self.util.execSubprocess(swateditorInstall)
+                time.sleep(5)
+                swateditor_installed = True
+            elif res == SKIP:
+                pass
+            elif res == CANCEL:
+                del self.dialog
+                return
+            else:
+                self.unknownActionPopup()
 
-        # run the SWAT editor installer as an outside process
-        if res == NEXT:
-            self.util.execSubprocess(swateditorInstall)
+        if swateditor_installed:
+            # install SWAT post-installation stuff
             self.dialog = mwswatPostInstallWindow(mapwindowDefaultDir)
             res = self.showDialog()
-        elif res == SKIP:
-            pass
-        elif res == CANCEL:
-            del self.dialog
-            return
-        else:
-            self.unknownActionPopup()
+            if res == NEXT:
+                # copy the DTU customised MWSWAT 2009 installation
+                dirPath = str(self.dialog.dirPathText.toPlainText())
+                mwswatPath = os.path.join(dirPath,"Plugins","MWSWAT2009")
+                dstPath = os.path.join(mwswatPath,'swat2009DtuEnvVers0.2')
+                srcPath = "MWSWAT additional software\\swat2009DtuEnvVers0.2"
+                # show dialog because it might take some time on slower computers
+                self.dialog = copyingWaitWindow(self.util, srcPath, dstPath)
+                self.showDialog()
 
-        if res == NEXT:
-            # copy the DTU customised MWSWAT 2009 installation
-            dirPath = str(self.dialog.dirPathText.toPlainText())
-            mwswatPath = os.path.join(dirPath,"Plugins","MWSWAT2009")
-            dstPath = os.path.join(mwswatPath,'swat2009DtuEnvVers0.2')
-            srcPath = "MWSWAT additional software\\swat2009DtuEnvVers0.2"
-            # show dialog because it might take some time on slower computers
-            self.dialog = copyingWaitWindow(self.util, srcPath, dstPath)
-            self.showDialog()
-
-            # copy and rename the customised MWSWAT exe
-            if os.path.isfile(os.path.join(mwswatPath,"swat2009rev481.exe_old")):
-                os.remove(os.path.join(mwswatPath,"swat2009rev481.exe_old"))
-            os.rename(os.path.join(mwswatPath,"swat2009rev481.exe"), os.path.join(mwswatPath,"swat2009rev481.exe_old"))
-            self.util.copyFiles(os.path.join(dstPath, "swat2009DtuEnv.exe"), mwswatPath)
-            if os.path.isfile(os.path.join(mwswatPath,"swat2009rev481.exe")):
-                os.remove(os.path.join(mwswatPath,"swat2009rev481.exe"))
-            os.rename(os.path.join(mwswatPath,"swat2009DtuEnv.exe"), os.path.join(mwswatPath, "swat2009rev481.exe"))
-            # copy the modified database file
-            self.util.copyFiles("MWSWAT additional software\\mwswat2009.mdb", mwswatPath)
-            # copy PEST
-            self.dialog = copyingWaitWindow(self.util, "MWSWAT additional software\\PEST", os.path.join(mwswatPath,"PEST"))
-            # show dialog because it might take some time on slower computers
-            self.showDialog()
-            # activate the plugin
-            self.util.activateSWATplugin(dirPath)
-        elif res == SKIP:
-            pass
-        elif res == CANCEL:
-            del self.dialog
-            return
-        else:
-            self.unknownActionPopup()
+                # copy and rename the customised MWSWAT exe
+                if os.path.isfile(os.path.join(mwswatPath,"swat2009rev481.exe_old")):
+                    os.remove(os.path.join(mwswatPath,"swat2009rev481.exe_old"))
+                os.rename(os.path.join(mwswatPath,"swat2009rev481.exe"), os.path.join(mwswatPath,"swat2009rev481.exe_old"))
+                self.util.copyFiles(os.path.join(dstPath, "swat2009DtuEnv.exe"), mwswatPath)
+                if os.path.isfile(os.path.join(mwswatPath,"swat2009rev481.exe")):
+                    os.remove(os.path.join(mwswatPath,"swat2009rev481.exe"))
+                os.rename(os.path.join(mwswatPath,"swat2009DtuEnv.exe"), os.path.join(mwswatPath, "swat2009rev481.exe"))
+                # copy the modified database file
+                self.util.copyFiles("MWSWAT additional software\\mwswat2009.mdb", mwswatPath)
+                # copy PEST
+                self.dialog = copyingWaitWindow(self.util, "MWSWAT additional software\\PEST", os.path.join(mwswatPath,"PEST"))
+                # show dialog because it might take some time on slower computers
+                self.showDialog()
+                # activate the plugin
+                self.util.activateSWATplugin(dirPath)
+            elif res == SKIP:
+                pass
+            elif res == CANCEL:
+                del self.dialog
+                return
+            else:
+                self.unknownActionPopup()
 
         # Finish
         self.dialog = finishWindow()
@@ -461,7 +488,7 @@ class Utilities(QtCore.QObject):
             msgBox = QtGui.QMessageBox()
             msgBox.setText("Could not find the installation file for this component!\n\n Skipping to next component")
             msgBox.exec_()
-            #self.dialog.action = SKIP
+            # self.dialog.action = SKIP
             return
 
         proc = subprocess.Popen(
@@ -470,8 +497,7 @@ class Utilities(QtCore.QObject):
                 stdout=subprocess.PIPE,
                 stdin=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
-                universal_newlines=True,
-                ).stdout
+                universal_newlines=True).stdout
         for line in iter(proc.readline, ""):
             pass
 
@@ -486,7 +512,6 @@ class Utilities(QtCore.QObject):
                         stdin=subprocess.PIPE,
                         stderr=subprocess.PIPE,
                         startupinfo=si)
-            #except (subprocess.CalledProcessError, WindowsError, OSError):
             except:
                 trace = traceback.format_exc()
                 msgBox = QtGui.QMessageBox()
@@ -533,8 +558,8 @@ class Utilities(QtCore.QObject):
 
         # checkWritePremissions alsoe creates the directory if it doesn't exist yet
         if not self.checkWritePermissions(dstPath):
-            self.error_exit("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n"+
-                            "Re-run the installer with administrator privileges or manually copy files from "+srcPath+
+            self.error_exit("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n" +
+                            "Re-run the installer with administrator privileges or manually copy files from "+srcPath +
                             " to "+dstPath+" after the installation process is over.")
             return
 
@@ -558,8 +583,8 @@ class Utilities(QtCore.QObject):
 
         # checkWritePremissions also creates the directory if it doesn't exist yet
         if not self.checkWritePermissions(dstPath):
-            self.error_exit("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n"+
-                           "Re-run the installer with administrator privileges or manually unzip files from "+archivePath+
+            self.error_exit("You do not have permissions to write to destination directory!\n\n No files were copied.\n\n" +
+                           "Re-run the installer with administrator privileges or manually unzip files from " + archivePath +
                            " to "+dstPath+" after the installation process is over.")
             return
 
@@ -620,6 +645,7 @@ class Utilities(QtCore.QObject):
 
     def activatePlugins(self):
         self.activateThis(
+                "PythonPlugins/atmospheric_correction",
                 "PythonPlugins/processing_workflow",
                 "PythonPlugins/openlayers_plugin",
                 "PythonPlugins/photo2shape",
@@ -630,13 +656,15 @@ class Utilities(QtCore.QObject):
                 "plugins/zonalstatisticsplugin")
 
     def activateProcessingProviders(self, osgeo4wDefaultDir):
-        self.setQGISSettings("Processing/configuration/ACTIVATE_GRASS70", "false")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_GRASS70", "true")
+        self.setQGISSettings("Processing/configuration/ACTIVATE_GRASS", "true")
         self.activateThis(
                 "Processing/configuration/ACTIVATE_GRASS",
                 "Processing/configuration/ACTIVATE_MODEL",
                 "Processing/configuration/ACTIVATE_OTB",
                 "Processing/configuration/ACTIVATE_QGIS",
                 "Processing/configuration/ACTIVATE_SAGA",
+                "Processing/configuration/ACTIVATE_DHIGRAS",
                 "Processing/configuration/ACTIVATE_SCRIPT",
                 "Processing/configuration/ACTIVATE_WORKFLOW",
                 "Processing/configuration/ACTIVATE_WOIS_TOOLBOX",
@@ -651,13 +679,7 @@ class Utilities(QtCore.QObject):
         try:
             grass_root = os.path.join(osgeo4wDefaultDir, 'apps', 'grass')
             grass_folders = sorted([d for d in glob.glob(os.path.join(grass_root, 'grass-*')) if os.path.isdir(d)])
-            grass6_folders = [d for d in grass_folders if os.path.basename(d).startswith('grass-6')]
-            try:
-                # highest GRASS6 version
-                grassFolder = grass6_folders[-1]
-            except IndexError:
-                # highest GRASS version
-                grassFolder = grass_folders[-1]
+            grassFolder = grass_folders[-1]
             self.setQGISSettings("Processing/configuration/GRASS_FOLDER", grassFolder)
         except (IndexError, OSError):
             pass
@@ -694,7 +716,7 @@ if __name__ == '__main__':
 
     app = QtGui.QApplication(sys.argv)
 
-    installer = woisInstaller()
+    installer = Installer()
 
     # Fix to make sure that runInstaller is executed in the app event loop
     def _slot_installer():
