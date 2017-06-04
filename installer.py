@@ -166,8 +166,7 @@ class Installer():
             QGIS_extras_dir = os.path.abspath("QGIS additional software")
             dstPath = os.path.join(os.path.expanduser("~"), ".qgis2", "processing")
             for zipfname in [
-                    'WOIS_scripts.zip', 'WOIS_models_and_workflows.zip',
-                    'GWA_scripts.zip', 'GWA_models_and_workflows.zip']:
+                    'WOIS_scripts.zip', 'WOIS_models_and_workflows.zip']:
                 srcPath = os.path.join(QGIS_extras_dir, zipfname)
                 # show dialog because it might take some time on slower computers
                 self.dialog = extractingWaitWindow(self.util, srcPath, dstPath)
