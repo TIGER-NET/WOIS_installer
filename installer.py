@@ -30,7 +30,7 @@ from installerGUI import installerWelcomeWindow, beamInstallWindow, beamPostInst
 from installerGUI import osgeo4wInstallWindow, osgeo4wPostInstallWindow, rInstallWindow, postgreInstallWindow, postgisInstallWindow
 from installerGUI import mapwindowInstallWindow, mwswatInstallWindow, mwswatPostInstallWindow, swateditorInstallWindow, finishWindow
 from installerGUI import extractingWaitWindow, copyingWaitWindow, cmdWaitWindow, uninstallInstructionsWindow, rPostInstallWindow
-from installerGUI import CANCEL,SKIP,NEXT
+from installerGUI import CANCEL, SKIP, NEXT
 import os
 import sys
 import re
@@ -46,6 +46,7 @@ from zipfile import ZipFile
 from distutils import dir_util
 
 import installer_utils
+
 
 class Installer():
 
@@ -316,7 +317,7 @@ class Installer():
         # Copy the R additional libraries
         if res == NEXT:
             dirPath = str(self.dialog.dirPathText.toPlainText())
-            dstPath = os.path.join(dirPath,"library")
+            dstPath = os.path.join(dirPath, "library")
             srcPath = "R additional libraries"
             # show dialog because it might take some time on slower computers
             self.dialog = extractingWaitWindow(self.util, os.path.join(srcPath, "libraries.zip"), dstPath)
